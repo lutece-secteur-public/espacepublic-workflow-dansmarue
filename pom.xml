@@ -181,9 +181,9 @@
   	</build>
 
     <scm>
-        <connection>scm:git:http://gestionversion.acn/applications_lutece/module-workflow-dansmarue.git</connection>
-        <developerConnection>scm:git:http://gestionversion.acn/applications_lutece/module-workflow-dansmarue.git</developerConnection>
-        <url>http://gestionversion.acn/applications_lutece/module-workflow-dansmarue.git</url>
+        <connection>scm:git:https://github.com/lutece-secteur-public/espacepublic-module-workflow-dansmarue.git</connection>
+        <developerConnection>scm:git:https://github.com/lutece-secteur-public/espacepublic-module-workflow-dansmarue.git</developerConnection>
+        <url>https://github.com/lutece-secteur-public/espacepublic-module-workflow-dansmarue.git</url>
 		<tag>HEAD</tag>
     </scm>
     <groupId>fr.paris.lutece.plugins</groupId>
