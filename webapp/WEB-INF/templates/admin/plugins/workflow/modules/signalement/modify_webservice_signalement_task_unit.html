@@ -1,0 +1,70 @@
+<div class="container">
+	<div class="row-fluid">	
+		<legend>
+			#i18n{module.workflow.dansmarue.task_webservice_config.modify.title}
+		</legend>
+		<div class="bg-danger">
+			${error!} 
+		</div>
+	    <form class="form-horizontal" method="post" action="jsp/admin/plugins/workflow/modules/signalement/DoModifyWebServiceSignalementTaskUnit.jsp">
+	    	<input type="hidden" id="idTask" name="idTask" value="${configUnit.idTask!}"/>
+	    	<input type="hidden" id="unit.idUnit" name="unit.idUnit" value="${configUnit.unit.idUnit!}"/>
+	    	<input type="hidden" id="id_task" name="id_task" value="${id_task!}"/>
+	    	<input type="hidden" id="id_unit" name="id_unit" value="${id_unit!}"/>
+	        <div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{module.workflow.dansmarue.task_webservice_config.entite} * : 
+				</label>
+				<div class="control-label col-xs-1 col-sm-1 col-md-1">
+					${unit.label!}
+				</div>
+			</div>
+        	<div class="form-group">
+				<label class="<@labelStyle />" for="getPrestataire">
+					#i18n{module.workflow.dansmarue.task_webservice_config.prestataire} : 
+				</label>
+				<div class="<@checkboxStyle />">
+					<div class="checkbox">
+						<label>
+							<#if configUnit.prestataireSansWS??>
+						    	<input class="checkbox" type="checkbox" name="prestataireSansWS" id="prestataireSansWS" checked value="oui"/>
+						    <#else>
+						    	<input class="checkbox" type="checkbox" name="prestataireSansWS" id="prestataireSansWS" value="oui"/>
+						    </#if>
+							<label class="inLine">
+								&nbsp;
+							</label>
+						</label>
+					</div>
+				</div>
+			</div>
+	        <div class="form-group">
+				<label class="<@labelStyle />" for="urlPresta">
+					#i18n{module.workflow.dansmarue.task_webservice_config.prestataire.url} : 
+				</label>
+				<div class="<@inputStyle />">
+					<input class="form-control input-sm" type="text" name="urlPrestataire" id="urlPrestataire" value="${configUnit.urlPrestataire!}" disabled maxlength="255"/>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button class="btn btn-primary btn-sm" type="submit" name="save">
+					<i class="glyphicon glyphicon-ok"></i>
+					#i18n{module.workflow.dansmarue.task_webservice_config.modify.save}
+				</button>
+				<button class="btn btn-sm btn-default" type="submit" name="cancel">
+					<i class="glyphicon glyphicon-arrow-left"></i>
+					#i18n{module.workflow.dansmarue.task_webservice_config.modify.cancel}
+				</button>
+			</div>
+	   </form>
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	$("#urlPrestataire").prop('disabled', $('#prestataireSansWS').prop("checked"));
+	$('#prestataireSansWS').click(function(){
+		$("#urlPrestataire").prop('disabled', $('#prestataireSansWS').prop("checked"));
+	});
+});
+</script>

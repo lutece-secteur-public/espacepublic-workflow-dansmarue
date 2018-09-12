@@ -1,0 +1,21 @@
+<legend>
+	#i18n{module.workflow.dansmarue.workflow.notification.suivi} :
+</legend>
+<#if notification_suivi?exists>
+	<div class="row">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			<label	for="mail">#i18n{module.workflow.dansmarue.task_notification_config.suivi.mail.message.title} : </label>
+		</div>
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			${notification_suivi.mailNotificationValue!}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			<label	for="mobile">#i18n{module.workflow.dansmarue.task_notification_config.suivi.mobile.message.title} : </label>
+		</div>
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			${notification_suivi.mobileNotificationValue!}
+		</div>
+	</div>
+</#if>

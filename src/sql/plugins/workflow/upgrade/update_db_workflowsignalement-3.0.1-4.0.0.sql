@@ -1,0 +1,2 @@
+﻿UPDATE core_admin_right SET name = 'module.workflow.dansmarue.adminFeature.messageTrackingManagement.name'  WHERE id_right='MESSAGE_TRACKING_MANAGEMENT';
+UPDATE core_admin_right SET description = 'module.workflow.dansmarue.adminFeature.messageTrackingManagement.description'  WHERE id_right='MESSAGE_TRACKING_MANAGEMENT';

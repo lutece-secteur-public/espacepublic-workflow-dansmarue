@@ -1,0 +1,8 @@
+<#if config?exists>
+	<legend>
+		#i18n{module.workflow.dansmarue.task_notification_config.3contents.title} :
+	</legend>
+    <#if notification_user_value?exists>
+    	${notification_user_value.value}
+    </#if>
+</#if>

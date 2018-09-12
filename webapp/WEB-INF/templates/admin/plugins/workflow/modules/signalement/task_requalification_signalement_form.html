@@ -1,0 +1,285 @@
+<@adresse_autocomplete_includes/>
+<@leaflet_map_includes/> 
+<script type="text/javascript">
+
+function updateSectors(){
+	var lng = $("#lng").val();
+	var lat = $("#lat").val();
+	
+	var parameters = new Object();
+	parameters.lng = lng;
+	parameters.lat = lat;
+	parameters.typesignalement_id = $("#typeSignalement").val();
+	
+	$.ajax({
+		url: "jsp/admin/plugins/signalement/DoGetSectorsByGeomAndUnits.jsp",
+		async: true,
+		data: parameters,
+		success: function(data) {
+			var options = '<option value="-1"></option>';
+			var computedSector = data.computedSector;
+			var computedSectorId = -1;
+			if(computedSector != undefined){
+				computedSectorId = computedSector.idSector;
+			}
+			data.sectors.forEach(function(sector){
+				options += '<option';
+				if(computedSectorId == sector.idSector){
+					options += ' selected ';
+				}
+				options += ' value="' + sector.idSector +'">' + sector.name + "</option>";
+			});
+			$("#sector").html(options);
+			$("#hiddenIdSector").val(computedSectorId);
+		},
+		error: function (xhr, ajaxOptions, thrownError){
+			alert(thrownError); 
+		}   
+	});
+}
+
+function adressSelectCallback(item){
+		var coordPoint = new Proj4js.Point(item.lng,item.lat);
+		Proj4js.transform(projSourceMapSRID, projDestSRID, coordPoint);
+		$("#lng").val(coordPoint.x);
+		$("#lat").val(coordPoint.y);
+		zoomTo(coordPoint.y,coordPoint.x);
+		if($("#sector").val() == undefined){
+			updateSectors();
+		}
+	}	
+
+$(document).ready(function() {
+	
+	var lng = $("#lng").val();
+	var lat = $("#lat").val();
+	
+	$.getScript("jsp/admin/plugins/signalement/DoGetMap.jsp", function(data){
+		initLeafletMap("map_canvas");
+		if(undefined != lng && lng.length > 0 && undefined != lat && lat.length > 0){
+			zoomTo(lat,lng);	
+		} 
+	});
+	
+	$.getScript("jsp/admin/plugins/leaflet/DoGetAutocomplete.jsp", function(data){
+		addAutocomplete("adresseRequalif",adressSelectCallback);
+	});
+	
+	var typeSignalement = $("#typeSignalement").val();
+	if(typeSignalement == undefined || typeSignalement == -1
+	 || undefined == lng || lng.length == 0 || undefined == lat && lat.length == 0){
+		$("#sector").html("");
+	}else{
+		var sector = $("#sector").val();
+		if(sector == undefined || sector == -1){
+			updateSectors()
+		}	
+	}
+	
+	$("#adresseRequalif").on("input",function(){
+		if($("#lng").val().length > 0){
+			$("#lng").val("");
+			$("#lat").val("");
+			removeMap(); 
+			initLeafletMap("map_canvas");
+		}
+		$("#sector").html("");
+	});
+	
+	$("#typeSignalement").on("change",function(){
+		$("#sector").html("");
+		var typeSignalementId = $(this).val();
+		if(typeSignalementId != undefined && typeSignalementId > 0){
+			updateSectors();
+		}
+	});
+	
+});
+
+</script>
+
+<div class="form-group">
+	<label class="<@labelStyle />">
+		#i18n{dansmarue.viewSignalement.numero} : 
+	</label>
+	<div class="<@inputStyle />">
+		${signalement.prefix}${signalement.annee}${signalement.mois}${signalement.numero}
+	</div>
+</div>
+<div class="form-group">
+	<label class="<@labelStyle />">
+		#i18n{dansmarue.viewSignalement.etat} : 
+	</label>
+	<div class="<@inputStyle />">
+		${stateSignalement.name}
+	</div>
+</div>
+<div class="form-group">
+	<label class="<@labelStyle />">
+		#i18n{dansmarue.saveSignalement.priorite} : 
+	</label>
+	<div class="<@inputStyle />">
+		${signalement.priorite.libelle}
+	</div>
+</div>
+<div class="form-group">
+	<label class="<@labelStyle />" for="#i18n{module.workflow.dansmarue.requalification.type}">
+		#i18n{module.workflow.dansmarue.requalification.type} * : 
+	</label>
+	<div class="<@inputStyle />">
+		<#if type_list?has_content && type_list?size != 0> 
+				<@comboWithParams name="typeSignalement" default_value="${signalement.typeSignalement.id!}" items=type_list additionalParameters="class=\"form-control input-sm\"" />
+		</#if>
+	</div>
+</div>
+<div class="form-group">
+	<label class="<@labelStyle />" for="#i18n{module.workflow.dansmarue.requalification.adresse}">
+		#i18n{module.workflow.dansmarue.requalification.adresse} * : 
+	</label>
+	<div class="<@inputStyle />">
+	   <#if isRequalificationPrestataire >
+		  <input class="form-control input-sm" readonly type="text" name="adresseRequalif" id="adresseRequalif" value="${adresse.adresse!}" size="60" maxlength="255"/>
+	   <#else>
+	      <input class="form-control input-sm" type="text" name="adresseRequalif" id="adresseRequalif" value="${adresse.adresse!}" size="60" maxlength="255"/>
+	   </#if>	
+	</div>
+</div>
+<div class="form-group">
+	<label class="<@labelStyle />" for="#i18n{module.workflow.dansmarue.requalification.sector}">
+		#i18n{module.workflow.dansmarue.requalification.sector} * : 
+	</label>
+	<div class="<@inputStyle />">
+		<#if secteur_list?has_content && secteur_list?size != 0> 
+		    <#if isRequalificationPrestataire >
+				<@comboWithParams name="sector" default_value="${(signalement.secteur.idSector)!}" items=secteur_list additionalParameters="disabled class=\"form-control input-sm\"" />
+				<input type="hidden" name="hiddenIdSector" id="hiddenIdSector" value="${(signalement.secteur.idSector)!}" />
+		    <#else>
+		       <@comboWithParams name="sector" default_value="${(signalement.secteur.idSector)!}" items=secteur_list additionalParameters="class=\"form-control input-sm\"" />
+		    </#if>
+		</#if>
+	</div>
+</div>
+<div style="width: 600px; margin: auto;">
+	<div id="map_canvas" style="z-index:0;" class="map"></div>
+</div>
+</script>
+<noscript>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			&nbsp;
+		</label>
+		<span class="<@inputStyle />">
+			<button class="btn btn-primary btn-sm" type="submit" name="searchAddress">
+				Rechercher
+			</button>
+		</span>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			&nbsp;
+		</label>
+		<span class="<@inputStyle />">
+			<!--  PROPOSED ADDRESSES FOR USER IN ACCESSIBLE MODE (WITHOUT MAP) -->
+			<#if proposedAddresses!?has_content && (proposedAddresses!?size > 0)>
+				<br />
+				<select class="form-control input-sm" name="validAddress" style="width: auto; margin-left: -13px;">
+					<#list proposedAddresses as paddress>
+						<option value="${paddress.libelleTypo} / ${paddress.x} / ${paddress.y}">
+							${paddress.libelleTypo}
+						</option>
+					</#list> 
+				</select>
+				<button class="btn btn-primary btn-sm" type="submit" name="validProposedAddress">
+					Valider
+				</button>
+			</#if>
+			<#if noValidAddresses!?has_content>
+				<br/>
+				#i18n{ramen.accessibility.noValidAddresses}
+			</#if>
+		</span>
+	</div>
+</noscript>
+<input type="hidden" id="adresseLoad" name="adresseLoad" value="${adresse.adresse!}" size="50" maxlength="80" />
+<#if signaleur.mail?has_content>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{dansmarue.saveSignalement.mail} : 
+		</label>
+		<div class="<@inputStyle />">
+			${signaleur.mail}
+		</div>
+	</div>
+</#if>
+<#if adresse.precisionLocalisation?has_content>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{dansmarue.saveSignalement.precisionLocalisation} : 
+		</label>
+		<div class="<@inputStyle />">
+			${adresse.precisionLocalisation}
+		</div>
+	</div>
+</#if>
+<#if signalement.commentaire?has_content>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{dansmarue.saveSignalement.commentaire} : 
+		</label>
+		<div class="<@inputStyle />">
+			${signalement.commentaire}
+		</div>
+	</div>
+</#if>
+<#if signalement.dateCreation?has_content>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{dansmarue.viewSignalement.dateCreation} : 
+		</label>
+		<div class="<@inputStyle />">
+			${signalement.dateCreation!} <#if signalement.heureCreation?has_content>${signalement.heureCreation?string["HH:mm"]}</#if>
+		</div>
+	</div>
+</#if>
+<#if signalement.commentaireProgrammation != "">
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{dansmarue.viewSignalement.commentaireProgrammation} : 
+		</label>
+		<div class="<@inputStyle />">
+			${signalement.commentaireProgrammation}
+		</div>
+	</div>
+</#if>
+<#if photos?has_content>
+	<#assign index = 1>
+	<#list photos as photo>
+		<#if photo.imageUrl != "">
+			<div class="form-group">
+				<label class="<@labelStyle />" for="image">
+					#i18n{dansmarue.saveSignalement.photo} n°${index}
+					<#if photo.vue == 1>
+			    		(#i18n{dansmarue.saveSignalement.vueEnsemble}) 
+			    	<#else>
+				    	(#i18n{dansmarue.saveSignalement.vuePres}) 	
+				    </#if>
+				</label>
+				<div class="<@inputStyle />">
+					<a href='#' data-toggle="modal" data-target="#imageModal" image-url='${photo.imageUrl}'>
+						<img src='${photo.imageUrl}' style="max-width: 100px" />
+					</a>
+				</div>
+			</div>
+			<#assign index = index + 1>
+		</#if>
+	</#list>
+</#if>
+	
+    <input type="hidden" id="lng" name="lng" value="${adresse.lng!?c}" /> 
+	<input type="hidden" id="lat" name="lat" value="${adresse.lat!?c}" /> 
+	<input type="hidden" id="lngAddress" name="lngAddress" <#if (adresse.lngAddress)!?has_content>value="${adresse.lngAddress!?c}"</#if> /> 
+	<input type="hidden" id="latAddress" name="latAddress" <#if (adresse.lngAddress)!?has_content>value="${adresse.lngAddress!?c}"</#if> /> 
+	<input type="hidden" name="idSignalement" id="idSignalement" value="${signalement.id}" />
+	<input type="hidden" name="next" id="next" value="${next!}" />
+	<input type="hidden" name="isRoadMap" id="isRoadMap" value="${isRoadMap!}" />
+<@modalImage/>

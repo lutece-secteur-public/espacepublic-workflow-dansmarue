@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Module workflow dansmarue</title>
+    </properties>
+    <body>
+        <section name="Module workflow dansmarue">
+         
+            <subsection name="Description">
+                <p>this module allows to manage the different states of a report dansmarue.</p>
+            </subsection>
+           
+        </section>
+    </body>
+</document>

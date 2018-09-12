@@ -1,0 +1,103 @@
+<#include "/admin/util/editor/editor.html" />
+
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.title}</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="sender">
+			#i18n{module.workflow.dansmarue.task_notification_config.expediteur.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="sender" id="sender" value="${configDTO.sender!}" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.expediteur.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="subject">
+			#i18n{module.workflow.dansmarue.task_notification_config.subject.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="subject" id="subject" value="${configDTO.subject!}" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.subject.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="message">
+			#i18n{module.workflow.dansmarue.task_notification_config.message.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<div class="editor">
+				<textarea name="message" id="message" rows="10" cols="90" class="richtext">
+					${configDTO.message!}
+				</textarea>
+			</div>
+			#i18n{module.workflow.dansmarue.task_notification_config.message.comment}
+		</div>
+	</div>
+</fieldset>
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.title}</legend>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.valeur}</td>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.label}</td>
+			</tr>
+			<#list balises as balise>
+				<tr>
+					<td>${balise.nom!}</td>
+					<td>&#36;&#123;${balise.valeur!}&#125;</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+</fieldset>
+<fieldset>
+	<legend>Destinataire(s) selon l'entité du signalement</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="unit.idUnit">
+			#i18n{module.workflow.dansmarue.task_notification_config.destinataires.entite} * :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="unit.idUnit" default_value="" items=liste_units additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="destinataires">
+			#i18n{module.workflow.dansmarue.task_notification_config.destinataires.destinataires} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="destinataires" id="destinataires" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.destinataires.comment}
+			<br/>
+			<button type="submit" class="btn btn-primary btn-sm" name="add_unit">
+				<span class="glyphicon glyphicon-plus"></span>
+				#i18n{module.workflow.dansmarue.notification.add}
+			</button>
+		</div>
+	</div>
+</fieldset>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.destinataires.entite}</td>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.destinataires.destinataires}</td>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.destinataires.actions}</td>
+			</tr>
+			<#list configDTO.listConfigUnit as config_unit>
+				<tr>
+					<td>${config_unit.unit.label!}</td>
+					<td>${config_unit.destinataires!}</td>
+					<td>
+						<a class="btn btn-primary btn-sm" alt="#i18n{module.workflow.dansmarue.task_notification_config.destinataires.modify.alt}" href="jsp/admin/plugins/workflow/modules/signalement/GetModifyNotificationSignalementTaskUnit.jsp?id_task=${config_unit.idTask}&id_unit=${config_unit.unit.idUnit}"> 
+		        			<i class="glyphicon glyphicon-edit"></i>
+		        		</a>
+		        		<a class="btn btn-danger btn-sm" alt="#i18n{module.workflow.dansmarue.task_notification_config.destinataires.delete.alt}" href="jsp/admin/plugins/workflow/modules/signalement/ConfirmDeleteNotificationSignalementTaskUnit.jsp?id_task=${config_unit.idTask}&id_unit=${config_unit.unit.idUnit}"> 
+							<i class="glyphicon glyphicon-trash"></i>
+		        		</a>
+					</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+<fieldset>
+<@initEditor />

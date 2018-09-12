@@ -1,0 +1,72 @@
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_requalification_auto_config.requalifAuto}</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="sourceUnit">
+			#i18n{module.workflow.dansmarue.task_requalification_auto_config.entite_source} * :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="idSourceUnit" items=first_level_units default_value="" additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="type_signalement">
+			#i18n{module.workflow.dansmarue.task_requalification_auto_config.type_signalement} :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="idTypeSignalement" items=list_type_signalement default_value="-1" additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="targetUnit">
+			#i18n{module.workflow.dansmarue.task_requalification_auto_config.entite_cible} * :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="idTargetUnit" items=liste_units default_value="" additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="workflow_state_after">
+			#i18n{module.workflow.dansmarue.task_requalification_auto_config.workflow_state_after} :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="idStateAfter" items=liste_states default_value="" additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			&nbsp;
+		</label>
+		<div class="<@inputStyle />">
+			<button type="submit" class="btn btn-primary btn-sm" name="add_unit">
+				<span class="glyphicon glyphicon-plus"></span>
+				#i18n{module.workflow.dansmarue.notification.add}
+			</button>
+		</div>
+	</div>
+</fieldset>
+<fieldset>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_requalification_auto_config.entite_source}</th>
+				<th>#i18n{module.workflow.dansmarue.task_requalification_auto_config.type_signalement}</th>
+				<th>#i18n{module.workflow.dansmarue.task_requalification_auto_config.entite_cible}</th>
+				<th>#i18n{module.workflow.dansmarue.task_requalification_auto_config.state_after}</th>
+				<th>#i18n{portal.util.labelActions}</th>
+			</tr>
+			<#list list_requalif_units as requalif_unit>
+				<tr>
+					<td>${requalif_unit.sourceUnitName!}</td>
+					<td>${requalif_unit.typeSignalementName!}</td>
+					<td>${requalif_unit.targetUnitName!}</td>
+					<td>${requalif_unit.workflowStateAfterName!}<td>
+		        		<a class="btn btn-danger btn-sm" href="jsp/admin/plugins/workflow/modules/signalement/requalificationauto/ConfirmDeleteRequalificationAutoSignalementTaskUnit.jsp?idConfigUnit=${requalif_unit.idConfigUnit}"> 
+		        			<i class="glyphicon glyphicon-trash"></i>
+		        			#i18n{portal.util.labelDelete}
+		        		</a>
+					</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+</fieldset>

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<tx:annotation-driven />
+	<context:annotation-config />
+
+	<!-- DAO -->
+	<bean id="signalement.notificationSignalementTaskConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigDAO" />
+	<bean id="signalement.notificationSignalementTaskConfigUnitDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigUnitDAO" />
+	<bean id="signalement.notificationSignalementUserTaskConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfigDAO" />
+	<bean id="signalement.notificationSignalementUserValueDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationUserValueDAO" />
+	<bean id="signalement.notificationSignalementSuiviTaskConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfigDAO" />
+	<bean id="signalement.notificationSuiviValueDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviValueDAO" />
+	<bean id="signalement.notificationSignalementUserMultiContentsTaskConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationSignalementUserMultiContentsTaskConfigDAO" />
+	<bean id="signalement.notificationSignalementUserMultiContentsValueDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationUserMultiContentsValueDAO" />
+	<bean id="signalement.webserviceSignalementTaskConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfigDAO" />
+	<bean id="signalement.webserviceSignalementTaskConfigUnitDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfigUnitDAO" />
+	<bean id="signalement.webserviceSignalementValueDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceValueDAO" />
+	<bean id="workflow-signalement.requalificationAutoConfigDAO"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.business.RequalificationAutoSignalementTaskConfigDAO" />
+
+	<!-- SERVICES -->
+	<bean id="signalement.notificationUserValueService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.service.NotificationUserValueService" />
+	<bean id="signalement.notificationSuiviValueService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.service.NotificationSuiviValueService" />
+	<bean id="signalement.notificationSignalementTaskConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTaskConfigService" />
+	<bean id="signalement.notificationUserMultiContentsValueService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.service.NotificationUserMultiContentsValueService" />
+	<bean id="signalement.notificationSignalementTaskConfigUnitService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTaskConfigUnitService" />
+	<bean id="signalement.webserviceSignalementTaskConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service.WebServiceSignalementTaskConfigService" />
+	<bean id="signalement.webserviceValueService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service.WebServiceValueService" />
+
+	<!-- creation signalement-->
+	<bean id="workflow-signalement.creationSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementCreation" p:titleI18nKey="module.workflow.dansmarue.creationSignalement"
+		p:beanName="workflow-signalement.creationSignalementBean"
+		p:configRequired="false" p:taskForAutomaticAction="false" />
+	<bean id="workflow-signalement.creationSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.creationsignalement.CreationSignalementTask"
+		scope="prototype" />
+
+	<!-- accepter signalement -->
+	<bean id="workflow-signalement.accepterSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementAccepter" p:titleI18nKey="module.workflow.dansmarue.accepterSignalement"
+		p:beanName="workflow-signalement.accepterSignalementBean" />
+	<bean id="workflow-signalement.accepterSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.acceptersignalement.AccepterSignalementTask"
+		scope="prototype" />
+
+	<!-- requalification signalement -->
+	<bean id="workflow-signalement.requalificationSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementRequalification" p:titleI18nKey="module.workflow.dansmarue.requalificationSignalement"
+		p:beanName="workflow-signalement.requalificationSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.requalificationSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationsignalement.service.RequalificationSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.requalificationSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationsignalement.web.RequalificationSignalementComponent"
+		p:taskType-ref="workflow-signalement.requalificationSignalement" />
+
+	<!-- resectorisation signalement -->
+	<bean id="workflow-signalement.resectorisationSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementResectorisation" p:titleI18nKey="module.workflow.dansmarue.resectorisationSignalement"
+		p:beanName="workflow-signalement.resectorisationSignalementBean" />
+	<bean id="workflow-signalement.resectorisationSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.resectorisationsignalement.ResectorisationSignalementTask"
+		scope="prototype" />
+
+	<!-- programmation signalement -->
+	<bean id="workflow-signalement.programmationSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementProgrammation" p:titleI18nKey="module.workflow.dansmarue.programmationSignalement"
+		p:beanName="workflow-signalement.programmationSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.programmationSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.programmationsignalement.service.ProgrammationSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.programmationSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.programmationsignalement.web.ProgrammationComponent"
+		p:taskType-ref="workflow-signalement.programmationSignalement" />
+
+	<!-- service fait -->
+	<bean id="workflow-signalement.serviceFaitSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementServiceFait" p:titleI18nKey="module.workflow.dansmarue.serviceFaitSignalement"
+		p:beanName="workflow-signalement.serviceFaitSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.serviceFaitSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.servicefaitsignalement.service.ServiceFaitSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.serviceFaitSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.servicefaitsignalement.web.ServiceFaitComponent"
+		p:taskType-ref="workflow-signalement.serviceFaitSignalement" />
+
+	<!-- Rejet signalement -->
+	<bean id="workflow-signalement.rejetSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementRejet" p:titleI18nKey="module.workflow.dansmarue.rejetSignalement"
+		p:beanName="workflow-signalement.rejetSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.rejetSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.rejetsignalement.service.RejetSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.rejetSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.rejetsignalement.web.RejetSignalementComponent"
+		p:taskType-ref="workflow-signalement.rejetSignalement" />
+	
+	<!-- Mise en surveillance -->
+	<bean id="workflow-signalement.miseEnSurveillanceSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskMiseEnSurveillance" p:titleI18nKey="module.workflow.dansmarue.miseEnSurveillanceSignalement"
+		p:beanName="workflow-signalement.miseEnSurveillanceSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.miseEnSurveillanceSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.surveillesignalement.service.SurveillerSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.miseEnSurveillanceSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.surveillesignalement.web.SurveillerSignalementComponent"
+		p:taskType-ref="workflow-signalement.miseEnSurveillanceSignalement" />
+
+	<!-- Reprogrammation -->
+	<bean id="workflow-signalement.reprogrammationSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementReprogrammation" p:titleI18nKey="module.workflow.dansmarue.reprogrammationSignalement"
+		p:beanName="workflow-signalement.reprogrammationSignalementBean"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.reprogrammationSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.reprogrammationsignalement.service.ReprogrammationSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.reprogrammationSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.reprogrammationsignalement.web.ReprogrammationComponent"
+		p:taskType-ref="workflow-signalement.reprogrammationSignalement" />
+		
+	<!-- notification -->
+	<bean id="workflow-signalement.notification"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementNotification" p:titleI18nKey="module.workflow.dansmarue.workflow.notification"
+		p:beanName="workflow-signalement.notificationBean" p:configBeanName="workflow-signalement.notificationConfig"
+		p:configRequired="true" />
+	<bean id="workflow-signalement.notificationBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigDTO"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.web.NotificationComponent"
+		p:taskType-ref="workflow-signalement.notification" 
+		p:taskConfigService-ref="workflow-signalement.notificationConfigService" />
+	<bean id="workflow-signalement.notificationConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementConfigService"
+		p:taskConfigDAO-ref="signalement.notificationSignalementTaskConfigDAO" />
+		
+	<!-- Notification user -->
+	<bean id="workflow-signalement.notificationUser"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementUserNotification" p:titleI18nKey="module.workflow.dansmarue.workflow.notification.user"
+		p:beanName="workflow-signalement.notificationUserBean"
+		p:configRequired="true" p:configBeanName="workflow-signalement.notificationUserConfig" />
+	<bean id="workflow-signalement.notificationUserBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.service.NotificationSignalementUserTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationUserConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfig"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationUserComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.web.NotificationUserComponent"
+		p:taskType-ref="workflow-signalement.notificationUser" 
+		p:taskConfigService-ref="workflow-signalement.notificationUserConfigService" />
+	<bean id="workflow-signalement.notificationUserConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.service.NotificationUserConfigService"
+		p:taskConfigDAO-ref="signalement.notificationSignalementUserTaskConfigDAO" />
+
+	<!-- Notification suivi -->
+	<bean id="workflow-signalement.notificationSuivi"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementNotificationSuivi" p:titleI18nKey="module.workflow.dansmarue.workflow.notification.suivi"
+		p:beanName="workflow-signalement.notificationSuiviBean"
+		p:configRequired="true" p:configBeanName="workflow-signalement.notificationSuiviConfig" />
+	<bean id="workflow-signalement.notificationSuiviBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.service.NotificationSuiviTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationSuiviConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfig"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationSuiviComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.web.NotificationSuiviComponent"
+		p:taskType-ref="workflow-signalement.notificationSuivi" 
+		p:taskConfigService-ref="workflow-signalement.notificationSuiviConfigService" />
+	<bean id="workflow-signalement.notificationSuiviConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.service.NotificationSuiviConfigService"
+		p:taskConfigDAO-ref="signalement.notificationSignalementSuiviTaskConfigDAO" />
+
+	<!-- Notification user 3 contents -->
+	<bean id="workflow-signalement.notificationUserMultiContents"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementUserNotificationMultiContents"
+		p:titleI18nKey="module.workflow.dansmarue.workflow.notification.userMultiContents"
+		p:beanName="workflow-signalement.notificationUserMultiContentsBean"
+		p:configRequired="true"
+		p:configBeanName="workflow-signalement.notificationUserMultiContentsConfig"
+		p:formTaskRequired="true" />
+	<bean id="workflow-signalement.notificationUserMultiContentsBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.service.NotificationSignalementUserMultiContentsTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationUserMultiContentsConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationSignalementUserMultiContentsTaskConfig"
+		scope="prototype" />
+	<bean id="workflow-signalement.notificationUserMultiContentsComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.web.NotificationUserMultiContentsComponent"
+		p:taskType-ref="workflow-signalement.notificationUserMultiContents"
+		p:taskConfigService-ref="workflow-signalement.notificationUserMultiContentsConfigService" />
+	<bean id="workflow-signalement.notificationUserMultiContentsConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.service.NotificationUserMultiContentsConfigService"
+		p:taskConfigDAO-ref="signalement.notificationSignalementTaskConfigDAO" />
+
+	<!-- Requalification auto task -->
+	<bean id="workflow-signalement.requalificationAuto"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskRequalificationAutoSignalement"
+		p:titleI18nKey="module.workflow.dansmarue.task_requalification_auto_config.title"
+		p:beanName="workflow-signalement.requalificationAutoBean"
+		p:configRequired="true" p:configBeanName="workflow-signalement.requalificationAutoConfig" />
+	<bean id="workflow-signalement.requalificationAutoBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.service.RequalificationAutoSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.requalificationAutoConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.business.RequalificationAutoConfigUnit"
+		scope="prototype" />
+	<bean id="workflow-signalement.requalificationAutoComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.web.RequalificationAutoComponent"
+		p:taskType-ref="workflow-signalement.requalificationAuto"
+		p:taskConfigService-ref="workflow-signalement.requalificationAutoConfigService" />
+	<bean id="workflow-signalement.requalificationAutoConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.service.RequalificationAutoSignalementTaskConfigService"
+		p:taskConfigDAO-ref="workflow-signalement.requalificationAutoConfigDAO" />
+
+	<!-- webservice task -->
+	<bean id="workflow-signalement.webservice"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskSignalementWebService" p:titleI18nKey="module.workflow.dansmarue.workflow.webservice"
+		p:beanName="workflow-signalement.webserviceBean" p:configRequired="true"
+		p:configBeanName="workflow-signalement.webserviceConfig" />
+	<bean id="workflow-signalement.webserviceBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service.WebServiceSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.webserviceConfig"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfig"
+		scope="prototype" />
+	<bean id="workflow-signalement.webserviceComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.web.WebServiceComponent"
+		p:taskType-ref="workflow-signalement.webservice"
+		p:taskConfigService-ref="workflow-signalement.webserviceConfigService" />
+	<bean id="workflow-signalement.webserviceConfigService"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service.WebServiceSignalementTaskConfigService"
+		p:taskConfigDAO-ref="signalement.webserviceSignalementTaskConfigDAO" />
+
+	<!-- webservice comment task -->
+	<bean id="workflow-signalement.webserviceComment"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskWebServiceComment" p:titleI18nKey="module.workflow.dansmarue.workflow.webservice.comment"
+		p:beanName="workflow-signalement.webserviceCommentBean" />
+	<bean id="workflow-signalement.webserviceCommentBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservicecomment.service.TaskWebServiceComment"
+		scope="prototype" />
+	<bean id="workflow-signalement.webserviceCommentComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservicecomment.web.WebServiceCommentComponent"
+		p:taskType-ref="workflow-signalement.webserviceComment" />
+		
+	<!-- Workflow informations signalement -->
+	<bean id="workflow-signalement.informationsSignalement"
+		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		p:key="taskInformationsSignalement" p:titleI18nKey="module.workflow.dansmarue.workflow.informationssignalement"
+		p:beanName="workflow-signalement.informationsSignalementBean"
+		p:configRequired="false" p:taskForAutomaticAction="false" />
+	<bean id="workflow-signalement.informationsSignalementBean"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.informationssignalement.service.InformationsSignalementTask"
+		scope="prototype" />
+	<bean id="workflow-signalement.informationsSignalementComponent"
+		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.informationssignalement.web.InformationsSignalementComponent"
+		p:taskType-ref="workflow-signalement.informationsSignalement" />	
+</beans>

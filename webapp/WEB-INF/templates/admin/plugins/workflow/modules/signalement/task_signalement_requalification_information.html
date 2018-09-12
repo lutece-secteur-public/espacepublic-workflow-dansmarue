@@ -1,0 +1,11 @@
+ <#if signalement_requalification?exists>
+ 
+<legend>
+	#i18n{module.workflow.dansmarue.task_signalement_requalification.title} :
+</legend>
+#i18n{module.workflow.dansmarue.task_signalement_requalification.date_requalification} : ${signalement_requalification.dateRequalification} <br/>
+#i18n{module.workflow.dansmarue.task_signalement_requalification.typeSignalement} : ${signalement_requalification.typeSignalement.libelle} <br/>
+#i18n{module.workflow.dansmarue.task_signalement_requalification.adresse} : ${signalement_requalification.adresse} <br/>
+#i18n{module.workflow.dansmarue.task_signalement_requalification.sector} : ${signalement_requalification.sector.name} <br/>
+
+ </#if>

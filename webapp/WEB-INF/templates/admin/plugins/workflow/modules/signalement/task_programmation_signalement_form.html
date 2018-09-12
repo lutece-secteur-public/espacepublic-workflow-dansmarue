@@ -1,0 +1,22 @@
+<div class="row">
+	<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		<div class="form-group">
+			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+				<label class="control-label" for="labelDatePrevueTraitement">
+					#i18n{module.workflow.dansmarue.programmation.dateprevuetraitement} * : 
+				</label>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+				<div class="input-group">
+					
+					<input class="form-control input-sm" type="text" name="datePrevueTraitement" id="datePrevueTraitement"/>
+					<div class="input-group-addon">
+						<span class="glyphicon glyphicon-calendar"></span>
+					</div>
+				</div>
+				<@getDatePickerBootstrap idField="datePrevueTraitement" language="${locale.language!}" />
+			</div>
+		</div>
+	</div>
+</div>
+<input type="hidden" name="id" id="id" value="${signalement_id}" />

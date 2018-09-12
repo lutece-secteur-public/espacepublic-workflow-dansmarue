@@ -1,0 +1,43 @@
+<div class="container">
+	<div class="row-fluid">	
+		<legend>
+			#i18n{module.workflow.dansmarue.task_notification_config.destinataires.modify.title}
+		</legend>
+		<div class="bg-danger">
+			${error!} 
+		</div>
+		<form class="form-horizontal" method="post" action="jsp/admin/plugins/workflow/modules/signalement/DoModifyNotificationSignalementTaskUnit.jsp">
+	    	<input type="hidden" id="idTask" name="idTask" value="${configUnit.idTask!}"/>
+	    	<input type="hidden" id="unit.idUnit" name="unit.idUnit" value="${configUnit.unit.idUnit!}"/>
+	    	<input type="hidden" id="id_task" name="id_task" value="${id_task!}"/>
+	    	<input type="hidden" id="id_unit" name="id_unit" value="${id_unit!}"/>
+	    	<div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{module.workflow.dansmarue.task_notification_config.destinataires.entite} * : 
+				</label>
+				<div class="control-label col-xs-4 col-sm-1 col-md-1">
+					${unit.label!}
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="<@labelStyle />" for="destinataires">
+					#i18n{module.workflow.dansmarue.task_notification_config.destinataires.destinataires} * : 
+				</label>
+				<div class="<@inputStyle />">
+					<input class="form-control input-sm" type="text" name="destinataires" id="" value="${configUnit.destinataires!}" maxlength="255"/>
+					#i18n{module.workflow.dansmarue.task_notification_config.destinataires.comment}
+				</div>
+			</div>
+	    	<div class="form-actions">
+				<button class="btn btn-primary btn-sm" type="submit" name="save">
+					<i class="glyphicon glyphicon-ok"></i>
+					#i18n{module.workflow.dansmarue.task_notification_config.destinataires.save}
+				</button>
+				<button class="btn btn-sm btn-default" type="submit" name="cancel">
+					<i class="glyphicon glyphicon-arrow-left"></i>
+					#i18n{module.workflow.dansmarue.task_notification_config.destinataires.cancel}
+				</button>
+	    	</div>
+	    </form>
+	</div>
+</div>

@@ -1,0 +1,77 @@
+<div class="row">
+	<fieldset>
+		<div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+			<div class="form-group">
+					<label class="<@labelStyle />">
+						#i18n{module.workflow.dansmarue.workflow.informationssignalement.numero}</label>
+					</label>
+					<div class="control-label col-xs-12 col-sm-9 col-md-9">
+						${signalement.prefix}${signalement.annee}${signalement.mois}${signalement.numero}
+					</div>
+			</div>
+			<div class="form-group">
+				<label class="<@labelStyle />"
+					for="#i18n{dansmarue.saveSignalement.priorite}">
+					#i18n{dansmarue.saveSignalement.priorite}</label>
+				<div class="control-label col-xs-12 col-sm-9 col-md-9">
+					${signalement.priorite.libelle}</div>
+			</div>
+			<div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{module.workflow.dansmarue.workflow.informationssignalement.type}</label>
+				<div class="control-label col-xs-12 col-sm-9 col-md-9"><#if
+					signalement.type?has_content> ${signalement.type!} <#else >
+					&nbsp; </#if></div>
+			</div>
+			<div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{module.workflow.dansmarue.workflow.informationssignalement.adresse}</label>
+				<div class="control-label col-xs-12 col-sm-9 col-md-9">
+					${adresse.adresse} <br />
+					<a href="https://www.google.fr/maps?layer=c&z=17&cbp=0,0,0,0,0&cbll=${(adresse.lat)!?c},${(adresse.lng)!?c}&q=${adresse.adresse}"
+						target="sv"> (Street View) 
+					</a> 
+					<a href="http://www.openstreetmap.org/?mlat=${(adresse.lat)!?c}&mlon=${(adresse.lng)!?c}#map=18/${(adresse.lat)!?c}/${(adresse.lng)!?c}"
+						target="osm"> (OpenStreetMap) 
+					</a>
+				</div>
+				<input id="longitude" type="hidden" name="adresse.lng" 	value="${(adresse.lng)!?c}" />
+				<input id="latitude" type="hidden" name="adresse.lat" value="${(adresse.lat)!?c}" />
+			</div>
+			<#if (signaleur.mail)?has_content>
+			<div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{dansmarue.saveSignalement.mail}</label>
+				<div class="control-label col-xs-12 col-sm-9 col-md-9">
+					${(signaleur.mail)!}</div>
+			</div>	
+			</#if>	
+			<div class="form-group">
+				<label class="<@labelStyle />">
+					#i18n{dansmarue.viewSignalement.dateCreation}</label>
+					<div class="control-label col-xs-12 col-sm-9 col-md-9">
+						${signalement.dateCreation!} ${signalement.heureCreation?string("HH:mm")!} 
+					</div>
+			</div>
+		</div>
+		<#if photos?has_content>
+			<#assign index = 1> 
+			<div class="form-group">
+				<label class="<@labelStyle />" for="image">
+					#i18n{module.workflow.dansmarue.workflow.informationssignalement.photo}(s)
+				</label>
+				<div class="<@inputStyle />">
+				<#list photos as photo> 
+					<#if photo.imageUrl != "">
+						<a href='#' data-toggle="modal" data-target="#imageModal" image-url='${photo.imageUrl}'>
+							<img src='${photo.imageUrl}' style="max-width: 100px" />
+						</a>
+						<#assign index = index + 1>
+					</#if>
+				</#list>
+				</div>
+			</div>
+		</#if>
+	</fieldset>
+</div>
+<@modalImage/>

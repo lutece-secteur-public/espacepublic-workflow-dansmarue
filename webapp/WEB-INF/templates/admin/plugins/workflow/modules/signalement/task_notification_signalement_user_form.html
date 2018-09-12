@@ -1,0 +1,38 @@
+<#if config_notification_user?exists && has_email_signaleur?? && has_email_signaleur == true>
+    <input name="has_email_signaleur" id="has_email_signaleur" value="${has_email_signaleur?c}" type="hidden" />	
+	<div class="row">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			<div class="form-group">
+				<div class="control-label col-xs-12 col-sm-12 col-md-12 col-lg-12">
+					<label class="control-label" for="messageForUser">#i18n{dansmarue.saveSignalement.messageForUser}</label>
+				</div>
+				<div class="control-label col-xs-12 col-sm-12 col-md-8 col-lg-8">
+					<textarea class="form-control input-sm textareaDiv" name="messageForUser" rows="20" cols="80">${(config_notification_user.message)!}</textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+<link rel="stylesheet" href="js/jquery/plugins/ui/css/jquery-ui.css" type="text/css"/>		
+<style>
+  .ui-resizable-se {
+    bottom: 26px;
+    right: 26px;
+  }
+</style>
+<script src="js/jquery/plugins/ui/jquery-ui.min.js"></script>
+<script type="text/javascript">
+	 $(document).ready(function(){
+		 $(".textareaDiv").resizable();
+	 });
+ </script>
+<#else>
+	<div class="container">
+		<div class="row">
+			<div class="form-group">
+				<div class="<@inputStyle />">
+					#i18n{module.workflow.dansmarue.task_notification.message.nomail}
+				</div>
+			</div>
+		</div>
+	</div>
+</#if>

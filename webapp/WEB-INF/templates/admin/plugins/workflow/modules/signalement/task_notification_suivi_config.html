@@ -1,0 +1,74 @@
+<#include "/admin/util/editor/editor.html" />
+
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.title}</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="sender">
+			#i18n{module.workflow.dansmarue.task_notification_config.expediteur.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="sender" id="sender" value="${config.sender!}" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.expediteur.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="subject">
+			#i18n{module.workflow.dansmarue.task_notification_config.subject.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="subject" id="subject" value="${config.subject!}" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.subject.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="mobileSubject">
+			#i18n{module.workflow.dansmarue.task_notification_config.mobile.subject.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="mobileSubject" id="mobileSubject" value="${config.mobileSubject!}" maxlength="255"/>
+			#i18n{module.workflow.dansmarue.task_notification_config.mobile.subject.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="mailMessage">
+			#i18n{module.workflow.dansmarue.task_notification_config.suivi.mail.message.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<div class="editor">
+				<textarea name="mailMessage" id="mailMessage" rows="13" cols="90" class="richtext">
+					${config.mailMessage!}
+				</textarea>
+			</div>
+			#i18n{module.workflow.dansmarue.task_notification_config.suivi.mail.message.comment}
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="mobileMessage">
+			#i18n{module.workflow.dansmarue.task_notification_config.suivi.mobile.message.title} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<div class="editor">
+				<textarea name="mobileMessage" id="mobileMessage" rows="2" cols="140" style="width:100%">${config.mobileMessage!}</textarea>
+			</div>
+			#i18n{module.workflow.dansmarue.task_notification_config.suivi.mobile.message.comment}
+		</div>
+	</div>
+</fieldset>
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.title}</legend>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.valeur}</td>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.label}</td>
+			</tr>
+			<#list balises as balise>
+				<tr>
+					<td>${balise.nom!}</td>
+					<td>&#36;&#123;${balise.valeur!}&#125;</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+</fieldset>
+<@initEditor />

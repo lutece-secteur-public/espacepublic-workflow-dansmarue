@@ -1,0 +1,8 @@
+<#if comment_value?exists>
+	<#if comment_value.value?exists>
+		<legend>
+			#i18n{module.workflow.dansmarue.task_webservice_comment.title} :
+		</legend>
+		${comment_value.value}
+	</#if>
+</#if>

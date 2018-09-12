@@ -1,0 +1,116 @@
+<#include "/admin/util/editor/editor.html" />
+
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_webservice_config.states.title}</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="withWSSuccess">
+			#i18n{module.workflow.dansmarue.task_webservice_config.withWS.success} * :
+		</label>
+		<div class="<@inputStyle />">
+			<#if config?exists>
+				<@comboWithParams name="stateWithWSSuccess" items=state_list default_value="${config.stateWithWSSuccess!}" additionalParameters="class=\"form-control input-sm\"" />
+			<#else>
+				<@comboWithParams name="stateWithWSSuccess" items=state_list default_value="" additionalParameters="class=\"form-control input-sm\"" />
+			</#if>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="withWSFailure">
+			#i18n{module.workflow.dansmarue.task_webservice_config.withWS.failure} * :
+		</label>
+		<div class="<@inputStyle />">
+			<#if config?exists>
+				<@comboWithParams name="stateWithWSFailure" items=state_list default_value="${config.stateWithWSFailure!}" additionalParameters="class=\"form-control input-sm\"" />
+			<#else>
+				<@comboWithParams name="stateWithWSFailure" items=state_list default_value="" additionalParameters="class=\"form-control input-sm\"" />
+			</#if>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="withoutWS">
+			#i18n{module.workflow.dansmarue.task_webservice_config.withoutWS} * :
+		</label>
+		<div class="<@inputStyle />">
+			<#if config?exists>
+				<@comboWithParams name="stateWithoutWS" items=state_list default_value="${config.stateWithoutWS!}" additionalParameters="class=\"form-control input-sm\"" />
+			<#else>
+				<@comboWithParams name="stateWithoutWS" items=state_list default_value="" additionalParameters="class=\"form-control input-sm\"" />
+			</#if>
+		</div>
+	</div>
+</fieldset>
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_webservice_config.title}</legend>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="unit.idUnit">
+			#i18n{module.workflow.dansmarue.task_webservice_config.entite} * :
+		</label>
+		<div class="<@inputStyle />">
+			<@comboWithParams name="unit.idUnit" items=liste_units default_value="" additionalParameters="class=\"form-control input-sm\"" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="getPrestataire">
+			#i18n{module.workflow.dansmarue.task_webservice_config.prestataire} : 
+		</label>
+		<div class="<@checkboxStyle />">
+			<div class="checkbox">
+				<label>
+					<input class="checkbox" type="checkbox" id="prestataireSansWS" name="prestataireSansWS" checked value="oui" />
+					<label class="inLine">
+						&nbsp;
+					</label>
+				</label>
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="urlPresta">
+			#i18n{module.workflow.dansmarue.task_webservice_config.prestataire.url} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input class="form-control input-sm" type="text" name="urlPrestataire" id="urlPrestataire" value="" disabled maxlength="255"/>
+			<button type="submit" class="btn btn-primary btn-sm" name="add_unit">
+				#i18n{module.workflow.dansmarue.webservice.add}
+			</button>
+		</div>
+	</div>
+</fieldset>
+<fieldset>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_webservice_config.entite}</td>
+				<th>#i18n{module.workflow.dansmarue.task_webservice_config.prestataire}</td>
+				<th>#i18n{module.workflow.dansmarue.task_webservice_config.prestataire.url}</td>
+				<th>#i18n{module.workflow.dansmarue.task_webservice_config.actions}</td>
+			</tr>
+			<#list configDTO.listConfigUnit as config_unit>
+				<tr>
+					<td>${config_unit.unit.label!}</td>
+					<td>${config_unit.prestataireSansWS!}</td>
+					<td>${config_unit.urlPrestataire!}</td>
+					<td>
+						<a class="btn btn-primary btn-sm" alt="#i18n{module.workflow.dansmarue.task_webservice_config.modify.alt}"  title="#i18n{module.workflow.dansmarue.task_webservice_config.modify.title}" href="jsp/admin/plugins/workflow/modules/signalement/GetModifyWebServiceSignalementTaskUnit.jsp?id_task=${config_unit.idTask}&id_unit=${config_unit.unit.idUnit}"> 
+		        			<i class="glyphicon glyphicon-edit"></i>
+		        		</a>
+		        		<a class="btn btn-danger btn-sm" alt="#i18n{module.workflow.dansmarue.task_webservice_config.delete.alt}"  title="#i18n{module.workflow.dansmarue.task_webservice_config.delete.title}" href="jsp/admin/plugins/workflow/modules/signalement/ConfirmDeleteWebServiceSignalementTaskUnit.jsp?id_task=${config_unit.idTask}&id_unit=${config_unit.unit.idUnit}"> 
+		        			<i class="glyphicon glyphicon-trash"></i> 
+		        		</a>
+					</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+</fieldset>
+
+<@initEditor />
+
+<script>
+$(document).ready(function(){
+	$("#urlPrestataire").prop('disabled', $('#prestataireSansWS').prop("checked"));
+	$('#prestataireSansWS').click(function(){
+		$("#urlPrestataire").prop('disabled', $('#prestataireSansWS').prop("checked"));
+	});
+});
+</script>

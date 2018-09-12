@@ -1,0 +1,12 @@
+ <#if config?exists>
+	<#if config.title?exists >
+		<legend>
+			${config.title} :
+		</legend>
+	</#if>
+	<#if notification_user_value?exists>
+		${notification_user_value.value}
+	</#if>
+</#if>
+
+	

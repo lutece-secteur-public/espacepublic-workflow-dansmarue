@@ -1,0 +1,79 @@
+
+<script type="text/javascript">
+	 $(document).ready(function(){
+		 $(".textareaDiv").resizable();	
+	 });
+ </script>
+<!-- SIGNALEMENT -->
+<#if config?has_content>
+	<#if (has_email_signaleur?? && has_email_signaleur)>
+	<div class="form-group">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+			<label class="control-label">#i18n{module.workflow.dansmarue.task_notification_config.3contents.servicefait.title}* :</label>
+			<#assign index = 1 />
+			<#list config as message_sf>
+				<div class="checkbox">
+					<input type="radio" value="${message_sf.idMessage}" message_radio="message${message_sf.idMessage}" name="chosenMessage" id="chosenMessage${index}" />
+					<label class="inLine" for="chosenMessage${index}">
+						${message_sf.title!}
+					</label>
+				</div>
+				<#assign index = index + 1>
+			</#list>
+			
+			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+				<div id="messagesDiv" class="form-group">
+					<br/>
+					<div class="row">
+						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+							<label class="control-label" for="textAreaGroup">#i18n{module.workflow.dansmarue.task_notification_config.3contents.title} *</label>
+						</div>
+						<div id="textAreaGroup" class="col-xs-12 col-sm-12 col-md-8 col-lg-8" >
+							<#list config as message_sf>
+								<div class="messageDiv">
+									<textarea class="form-control input-sm textareaDiv" name="message${message_sf.idMessage}" rows="20" cols="80" style="display:none">${message_sf.message}</textarea>
+								</div>
+							</#list>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		 $(document).ready(function(){
+			 $(".textareaDiv").resizable();	
+			 $(".messageDiv").hide();
+			 $("#messagesDiv").hide();
+			 $("[message_radio]").change(function(event){
+				$("#messagesDiv").show();
+				if($(this).is(":checked")){
+					var matchingMessage = $(this).attr("message_radio");
+					$(".messageDiv").hide();
+					var selectedMessage = $("textarea[name='"+matchingMessage+"']");
+					selectedMessage.parent().parent().show();
+				}
+			 });
+		 });
+	 </script>
+	<#else>
+		<div class="container">
+			<div class="row">
+				<div class="form-group">
+					<div class="<@inputStyle />">
+						#i18n{module.workflow.dansmarue.task_notification_config.3contents.servicefait.nomail}
+					</div>
+				</div>
+			</div>
+		</div>
+	</#if>
+</#if>
+		
+<link rel="stylesheet" href="js/jquery/plugins/ui/css/jquery-ui.css" type="text/css"/>		
+<style>
+  .ui-resizable-se {
+    bottom: 26px;
+    right: 26px;
+  }
+</style>
+<script src="js/jquery/plugins/ui/jquery-ui.min.js"></script>

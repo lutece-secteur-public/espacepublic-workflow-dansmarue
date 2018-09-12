@@ -1,0 +1,10 @@
+<div class="form-group">
+	
+	<div class="<@inputStyle />" >
+		<#if observation_list?has_content && observation_list?size != 0> 
+				<@comboWithParams name="idObservationRejet" default_value="" items=observation_list additionalParameters="class=\"form-control input-sm\""/>
+				<input type="hidden" name="idSignalement" id="idSignalement" value="${signalement.id}" />
+		</#if>
+	</div>
+</div>
+<input type="hidden" name="idSignalement" id="idSignalement" value="${signalement.id}" />

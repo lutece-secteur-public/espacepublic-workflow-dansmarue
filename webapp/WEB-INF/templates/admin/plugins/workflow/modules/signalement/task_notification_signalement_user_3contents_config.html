@@ -1,0 +1,112 @@
+<#include "/admin/util/editor/editor.html" />
+
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.title}</legend>
+	
+	<#if config?has_content>
+		<div class="form-group">
+			<label class="<@labelStyle />" for="sender">
+				#i18n{module.workflow.dansmarue.task_notification_config.expediteur.title} * : 
+			</label>
+			<div class="<@inputStyle />">
+				<input class="form-control input-sm" type="text" name="sender" id="sender" value="${config[0].sender!}" maxlength="255"/>
+				#i18n{module.workflow.dansmarue.task_notification_config.expediteur.comment}
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="<@labelStyle />" for="subject">
+				#i18n{module.workflow.dansmarue.task_notification_config.subject.title} * : 
+			</label>
+			<div class="<@inputStyle />">
+				<input class="form-control input-sm" type="text" name="subject" id="subject"value="${config[0].subject!}" maxlength="255"/>
+				#i18n{module.workflow.dansmarue.task_notification_config.subject.comment}
+			</div>
+		</div>
+		
+		<#assign index = 1 />
+		<#list config as message_sf>	
+			<input type="hidden" class="form-control input-sm" name="idMessage" id="idMessage${index}" value="${message_sf.idMessage!}">	
+			<div class="form-group">
+				<label class="<@labelStyle />" for="title${index}">
+					#i18n{module.workflow.dansmarue.task_notification_config.3contents.title.sf}${index} : 
+				</label>
+				<div class="<@inputStyle />">
+					<input type="text" class="form-control input-sm" name="title" id="title${index}" value="${message_sf.title!}">
+					#i18n{module.workflow.dansmarue.task_notification_config.3contents.title.sf.comment}
+				</div>
+				<#if (index gt 2) >
+					<input type="hidden" class="form-control input-sm" name="idMessageDelete" id="idMessageDelete${index}" value="${message_sf.idMessage!}">
+					<button class="btn btn-danger center-block" type="submit"  
+						formaction="jsp/admin/plugins/workflow/modules/signalement/DoDeleteNotificationUserMultiContents.jsp"
+						id="delete_message" name="delete_message"
+						title="#i18n{module.workflow.dansmarue.task_notification_config.3contents.message.delete}">
+						<i class="glyphicon glyphicon-trash"></i>
+					</button>
+				</#if>
+			</div>	
+			<div class="form-group">
+				<label class="<@labelStyle />" for="message">
+					#i18n{module.workflow.dansmarue.task_notification_config.3contents.message.sf.title}${index} * : 
+				</label>
+				<div class="<@inputStyle />">
+					<div class="editor">
+						<textarea name="message" id="message${index}" rows="10" cols="90" class="richtext">
+							${message_sf.message!}
+						</textarea>
+					</div>
+					<#if index = 1>
+						#i18n{module.workflow.dansmarue.task_notification_config.3contents.message1.comment}
+					<#else>
+						#i18n{module.workflow.dansmarue.task_notification_config.3contents.message.sf.comment}
+					</#if>
+				</div>
+			</div>
+			<#assign index = index + 1>
+		</#list>
+	
+	</#if>
+	
+	<div class="form-group">
+		<label class="<@labelStyle />" for="title_new">
+			#i18n{module.workflow.dansmarue.task_notification_config.3contents.title.sf.new} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<input type="text" class="form-control input-sm" name="title_new" id="title_new" value="">
+		</div>
+		<button class="btn btn-info center-block" type="submit"  
+			formaction="jsp/admin/plugins/workflow/modules/signalement/DoAddNotificationUserMultiContents.jsp"
+			id="add_message" name="add_message"
+			title="#i18n{module.workflow.dansmarue.task_notification_config.3contents.message.add}">
+			<label>#i18n{module.workflow.dansmarue.task_notification_config.3contents.new_message.save}</label>
+		</button>
+	</div>
+	<div class="form-group">
+		<label class="<@labelStyle />" for="message_new">
+			#i18n{module.workflow.dansmarue.task_notification_config.3contents.message.sf.new} * : 
+		</label>
+		<div class="<@inputStyle />">
+			<div class="editor">
+				<textarea name="message_new" id="message_new" rows="10" cols="90" class="richtext"></textarea>
+			</div>
+		</div>
+	</div>
+	
+</fieldset>
+<fieldset>
+	<legend>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.title}</legend>
+	<table class="table table-striped table-condensed">
+		<tbody>
+			<tr>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.valeur}</td>
+				<th>#i18n{module.workflow.dansmarue.task_notification_config.freemarker.label}</td>
+			</tr>
+			<#list balises as balise>
+				<tr>
+					<td>${balise.nom!}</td>
+					<td>&#36;&#123;${balise.valeur!}&#125;</td>
+				</tr>
+			</#list>
+		</tbody>
+	</table>
+</fieldset>
+<@initEditor />

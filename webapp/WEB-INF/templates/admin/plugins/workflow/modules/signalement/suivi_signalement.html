@@ -1,0 +1,153 @@
+<@header/>
+<script src="js/bootstrap.min.js" type="text/javascript"></script>
+<div class="suivi">
+	<div class="container suivi-remarque">
+	<div class="row">
+		<div class="col-md-12">
+			<h2 class="black-title">#i18n{dansmarue.page.suivi.html.title}</h2>
+		</div>
+	</div>
+</div>
+
+<#if erreur != "" >
+<div class="error">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+			${erreur}
+			</div>
+		</div>
+	</div>
+</div>
+</#if>
+<#if signalement?has_content>
+	<#if (signalement.numeroSignalement) != "" >
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 rubrique">
+		 		<h3 class="sous-titre">#i18n{dansmarue.page.suivi.suiviDuMessage}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+		 		<p class="info-suivi">${signalement.numeroSignalement!}</p>
+			</div>
+		</div>
+	</div>			
+	</#if>	
+ 	<#if (currentState!) != "" >
+ 	<div class="container">
+ 		<div class="row">
+ 			<div class="col-md-12 rubrique">
+ 				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.statutActuel}</h3>
+ 			</div>
+ 		</div>
+ 	</div>
+ 	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+		 		<p class="info-suivi">${currentState!}</p>
+			</div>
+		</div>
+	</div>	
+ 	</#if>	
+ 	<#if (currentStateDate!) != "" >
+ 	<div class="container">
+ 		<div class="row">
+ 			<div class="col-md-12 rubrique">
+ 				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.dateStatutActuel}</h3>
+ 			</div>
+ 		</div>
+ 	</div>
+ 	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+		 		<p class="info-suivi">${currentStateDate!}</p>
+			</div>
+		</div>
+	</div>
+ 	</#if>
+ 	<div class="container">
+ 		<div class="row">
+ 			<div class="col-md-12 rubrique">
+ 				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.type}</h3>
+ 			</div>
+ 		</div>
+ 	</div>
+ 	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+		 		<p class="info-suivi">${signalement.typeSignalement.libelle!}</p>
+			</div>
+		</div>
+	</div>
+ 	<div class="container">
+ 		<div class="row">
+ 			<div class="col-md-12 rubrique">
+ 				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.adresse}</h3>
+ 			</div>
+ 		</div>
+ 	</div>
+ 	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+		 		<p class="info-suivi">${signalement.adresses[0].adresse!}</p>
+			</div>
+		</div>
+	</div>
+	<#if service_fait_available??>
+		<div class="container">
+	 		<div class="row">
+	 			<div class="col-md-12 rubrique">
+	 				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.action}</h3>
+	 			</div>
+	 		</div>
+			<div class="row">
+				<div class="col-md-12 radio">
+			 		<label for="servicefait" class="info-suivi"><input type="radio" checked id="servicefait" name="servicefait">#i18n{dansmarue.page.suivi.action.servicefait}</label>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="row">
+				<div class="text-center">
+					<form id="form" action="jsp/site/Portal.jsp?page=suivi"  method="post" novalidate>
+						<input type="hidden" name="token" value="${token}"/>
+						<button type="submit" class="btn btn-center continue" name="validate_suivi" role="button">#i18n{dansmarue.valider}</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</#if>
+	<#if history!?has_content && (history!?size > 0) >	
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 rubrique">
+				<h3 class="sous-titre">#i18n{dansmarue.page.suivi.historiqueMessage} <i id="historyToggle" data-toggle="collapse" data-target="#historyBlock" aria-expanded="true" aria-controls="collapse-history" class="glyphicon glyphicon-menu-up"></i></h3>
+			</div>
+		</div>
+	</div>
+	<div class="container collapse in" id="historyBlock">
+		<div class="row">
+			<div class="col-md-12">
+			<#list history as task>
+				<p class="info-suivi historique">${task.date!} : ${task.state!}</p>
+				<p class="info-suivi detail-historique">${task.message!}</p>
+			</#list>
+			</div>
+		</div>
+	</div>
+	</#if>
+</#if>
+	
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		$("#historyToggle").click(function(){
+			$(this).toggleClass("glyphicon-menu-down").toggleClass("glyphicon-menu-up");
+		});
+	});
+</script>

@@ -1,0 +1,195 @@
+<#if isRoadMap>
+	<div class="form-group">
+		<label class="<@labelStyle />">
+			#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.comment} * : 
+		</label>
+		<div class="<@radioStyle />">
+			<div class="radio" style="width:20%;float:left;">
+				<label class="radio-inline">
+					<input class="radio" id="serviceOption1" type="radio" value="1" name="serviceOption"/>   
+					#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.affectRendezVousEtDoublon}
+				</label>
+				<br/>
+				<label class="radio-inline">
+					<input class="radio" id="serviceOption0" type="radio" value="0" name="serviceOption"/>   
+					#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.affectSignale}
+				</label>
+				<!-- <label class="radio-inline">
+					<input class="radio" id="serviceOption2" type="radio" value="2" name="serviceOption"/>   
+					#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.affectDoublon}
+				</label> -->
+			</div>
+				<div class="form-group" style="width:60%;float:left;">
+					<div class="form-group" style="padding-top:1%;">
+						<div style="width:100px;float:right;">
+							<input class="form-control input-sm" type="text" name="heureDePassage" id="heureDePassage" value="" maxlength="5" />
+						</div>
+						<div style="margin: 0px 10px;float:right;">
+							#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.libelle.passage.a}:
+						</div>
+						<div style="width:30px;float:right; margin-left:10px;">
+							<img alt="calendrier" src="images/date_picker.png" onclick="triggerPassageDatePicker()"/>
+							<script>
+								function triggerPassageDatePicker() {
+									
+									$('#dateDePassage').datepicker('show');
+								}
+							
+							</script>
+						</div>
+						<div style="width:160px;float:right;">
+							<input class="form-control  input-append date" type="text" name="dateDePassage" id="dateDePassage" value="" />
+							<!-- <span class="add-on"><i class="icon-cal" id="cal"></i></span> -->
+						<script src="js/jquery/plugins/ui/jquery-ui.min.js"></script>
+						<script src="js/jquery/plugins/ui/ui.datepicker-fr.js"></script>
+						</div>
+						<div style="float:right;">
+							<label class=" control-label col-xs-12 col-sm-12 col-md-12 " for="dateDePassage">
+								#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.libelle.passage}:
+							</label>
+						</div>
+					</div>
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+					<div class="form-group" >
+								<div style="width:250px;float:right;">
+									<#if signalement.signaleurs[0]?has_content>
+										<input class="form-control input-sm" type="text" name="adresseEmail" value="${signalement.signaleurs[0].mail}" id="adresseEmail" />
+									<#else>
+										<input class="form-control input-sm" type="text" name="adresseEmail" value="" id="adresseEmail" />
+									</#if>
+								</div>
+								<div style="float:right;">
+									<label class=" control-label col-xs-12 col-sm-12 col-md-12 " for="adresseEmail">
+										#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.libelle.adresse.email}:
+									</label>
+								</div>
+					
+					</div>
+				</div>
+		</div>
+		
+	</div>
+<@getDatePicker idField="dateDePassage" language="${locale!}" />	
+	
+<script type="text/javascript" charset="utf-8">
+function updateChosenMessageStatus(){
+	if ($("#adresseEmail").val()==="") {
+			$('input:radio[name="chosenMessage"]').attr('disabled',true);
+		} else {
+			$('input:radio[name="chosenMessage"]').attr('disabled',false);
+		}
+}
+
+function isServiceOptionPicked(){
+	if($('input:radio[name="serviceOption"]').is(':checked')){
+		return true;
+	}else{
+		return false;
+	}
+}
+
+function setFieldPassageEnabled(property){
+	if(property){
+		$('#heureDePassage').attr('disabled', false) ;	
+	    $('#dateDePassage').attr('disabled', false) ;
+	}else{
+		$('#heureDePassage').attr('disabled', true) ;	
+	    $('#dateDePassage').attr('disabled', true) ;
+	}
+}
+
+function updateChosenMessageTextStatus(){
+	var value = $( 'input:radio[name=chosenMessage]:checked' ).val();
+	if($("#adresseEmail").val()===""){
+		disableMailFields();
+		return;
+	}
+	if (value==="checkbox_message1") {
+		$('.textareaDiv1').attr('disabled',false);
+		$('.textareaDiv2').attr('disabled',true);
+		$('.textareaDiv3').attr('disabled',true);
+	} else if (value==="checkbox_message2"){
+		$('.textareaDiv1').attr('disabled',true);
+		$('.textareaDiv2').attr('disabled',false);
+		$('.textareaDiv3').attr('disabled',true);
+					
+	} else if (value==="checkbox_message3"){
+		$('.textareaDiv1').attr('disabled',true);
+		$('.textareaDiv2').attr('disabled',true);
+		$('.textareaDiv3').attr('disabled',false);
+					
+	} else {
+		$('.textareaDiv1').attr('disabled',true);
+		$('.textareaDiv2').attr('disabled',true);
+		$('.textareaDiv3').attr('disabled',true);
+	}
+}
+
+$(document).ready(function(){
+	
+	if(isServiceOptionPicked()){
+		setFieldPassageEnabled(true);
+	}else{
+		setFieldPassageEnabled(false);
+	}
+	
+
+	$('input:radio[name="serviceOption"]').change(function(){
+	    setFieldPassageEnabled(true);
+	});
+
+	$('input:radio[name="chosenMessage"]').change( function(){
+		updateChosenMessageTextStatus();
+	});
+	
+	$('input:radio[name="chosenMessage"]').attr('disabled',true);
+	disableMailFields();
+	updateChosenMessageStatus();
+	updateChosenMessageTextStatus();
+
+	document.getElementsByName('heureDePassage')[0].onblur = function() {
+		var input = this.value;
+
+		//On v�rifie qu'il y'a bien 4 caract�re 
+		if(input.length == 4){
+			
+			var chars = this.value.split('');
+			var heure = this.value[0] + this.value[1];
+			var min = this.value[2] + this.value[3];
+			
+			document.getElementsByName('heureDePassage')[0].value = heure + ":" + min;
+			
+		}
+	}
+});
+
+
+function disableMailFields(){
+	$('.textareaDiv1').attr('disabled',true);
+	$('.textareaDiv2').attr('disabled',true);
+	$('.textareaDiv3').attr('disabled',true);
+}
+
+$("#adresseEmail").on("keyup", function() {
+	updateChosenMessageStatus();	
+	updateChosenMessageTextStatus();		
+});
+</script>
+	
+	
+	<input type="hidden" name="isRoadMap" value="true" />
+	<#if listDepots?? && listDepots?has_content>
+		<#list listDepots as depot>
+			<#if depot.template?has_content>
+				<#include depot.template />
+			</#if>
+		</#list>
+	</#if>
+<#-- <#else> -->
+<!-- 	<p> -->
+<!-- 		#i18n{module.workflow.dansmarue.serviceFaitSignalement.form.message} -->
+<!-- 	</p> -->
+</#if>

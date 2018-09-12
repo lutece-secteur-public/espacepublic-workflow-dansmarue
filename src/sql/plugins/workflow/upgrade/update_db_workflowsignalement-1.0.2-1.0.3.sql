@@ -1,0 +1,2 @@
+INSERT INTO workflow_action( id_action, name, description, id_workflow, id_state_before, id_state_after, id_icon, is_automatic, is_mass_action) VALUES (38, 'archivage signalement rejectés', 'archivage signalement rejectés', 2, 11,  12, null, 0, 0);
+INSERT INTO workflow_action( id_action, name, description, id_workflow, id_state_before, id_state_after, id_icon, is_automatic, is_mass_action) VALUES (39, 'archivage signalement service fait', 'archivage signalement service fait', 2, 10, 12, null, 0, 0);
