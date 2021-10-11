@@ -63,8 +63,8 @@ public class NotificationSignalementTaskConfigUnitDAO
             + " FROM signalement_workflow_notification_config_unit WHERE id_task=? and id_type_signalement is null";
 
     /** The Constant SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT. */
-    private static final String SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT = "SELECT id_task,destinataires,id_type_signalement"
-            + " FROM signalement_workflow_notification_config_unit WHERE id_task=? and id_unit is null";
+    private static final String SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT = "SELECT swncu.id_task,destinataires,swncu.id_type_signalement, sts.libelle , sts.fk_id_type_signalement"
+            + " FROM signalement_workflow_notification_config_unit swncu, signalement_type_signalement sts WHERE sts.id_type_signalement = swncu.id_type_signalement and swncu.id_task=? and swncu.id_unit is null";
 
     /** The Constant SQL_QUERY_INSERT. */
     private static final String SQL_QUERY_INSERT = "INSERT INTO signalement_workflow_notification_config_unit "
@@ -335,6 +335,10 @@ public class NotificationSignalementTaskConfigUnitDAO
             config.setDestinataires( daoUtil.getString( ++nPos ) );
             TypeSignalement type = new TypeSignalement( );
             type.setId( daoUtil.getInt( ++nPos ) );
+            type.setLibelle( daoUtil.getString( ++nPos ) );
+            TypeSignalement typeParent = new TypeSignalement( );
+            typeParent.setId( daoUtil.getInt( ++nPos ) );
+            type.setTypeSignalementParent( typeParent );
             config.setTypeSignalement( type );
 
             listConfigs.add( config );

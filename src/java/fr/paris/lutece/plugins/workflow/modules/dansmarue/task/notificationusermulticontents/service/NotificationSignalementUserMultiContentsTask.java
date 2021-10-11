@@ -219,7 +219,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
                 : StringUtils.EMPTY;
         String attrChosenMessage = request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ) != null
                 ? request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ).toString( )
-                : StringUtils.EMPTY;
+                        : StringUtils.EMPTY;
 
         Boolean isMessageTypo = ( ( ( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) != null )
                 && Boolean.valueOf( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) ) )
@@ -264,7 +264,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
         }
         else
         {
-            if ( !StringUtils.isEmpty( strChosenMessage ) && StringUtils.isEmpty( request.getParameter( MESSAGE_TYPO + Long.parseLong( strChosenMessage ) ) ) )
+            if ( ! StringUtils.isEmpty(attrChosenMessage) || (!StringUtils.isEmpty( strChosenMessage ) && StringUtils.isEmpty( request.getParameter( MESSAGE_TYPO + Long.parseLong( strChosenMessage ) ) )) )
             {
                 // Ajout de l'entete
                 message = DatastoreService.getDataValue( "sitelabels.site_property.message.typologie.entete.htmlblock", "" );

@@ -326,18 +326,27 @@ public class MessageTrackingJspBean extends AbstractJspBean
         for ( Long idTask : idsTask )
         {
 
-            List<NotificationSignalementTaskConfigUnit> lstConfigUnit = _notificationSignalementTaskConfigUnitService
-                    .findByIdTaskWithTypeSignalement( idTask.intValue( ), getPlugin( ) );
+            List<NotificationSignalementTaskConfigUnit> lstConfigUnit = _notificationSignalementTaskConfigUnitService.findByIdTaskWithTypeSignalement( idTask.intValue( ), getPlugin( ) );
 
             for ( NotificationSignalementTaskConfigUnit configUnit : lstConfigUnit )
             {
-                long exist = listTypesUser.stream( )
-                        .filter( typeSignalement -> typeSignalement.getId( ).intValue( ) == configUnit.getTypeSignalement( ).getId( ).intValue( ) ).count( );
+                long exist = listTypesUser.stream( ).filter( typeSignalement -> typeSignalement.getId( ).intValue( ) == configUnit.getTypeSignalement( ).getId( ).intValue( ) ).count( );
 
                 if ( configUnit.getDestinataires( ).contains( mailCurrentUser ) && ( exist < 1 ) )
                 {
-                    listTypesUser.add( _typeSignalementService.getTypeSignalementByIdWithParents( configUnit.getTypeSignalement( ).getId( ) ) );
+                    if ( ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ) != null ) && ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ).getId( ) > 0 ) )
+                    {
+                        listTypesUser.add( _typeSignalementService.getTypeSignalementByIdWithParents( configUnit.getTypeSignalement( ).getId( ) ) );
+                    } else
+                    {
+                        //Abonnement type signalement de niveau 1
+                        TypeSignalement signalementN1 = new TypeSignalement( );
+                        signalementN1.setId( configUnit.getTypeSignalement( ).getId( ) );
+                        signalementN1.setLibelle( configUnit.getTypeSignalement( ).getLibelle( ) );
+                        listTypesUser.add( signalementN1 );
+                    }
                 }
+
             }
         }
         return listTypesUser;
