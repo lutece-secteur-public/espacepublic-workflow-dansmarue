@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -206,6 +206,9 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
     private static final String URL_SONDAGE_DEMANDE = "sitelabels.site_property.message.url.sondage.demande";
 
     private static final String URL_SONDAGE_SERVICE = "sitelabels.site_property.message.url.sondage.sevice";
+
+    private static final String DTO_ARRONDISSEMENT = "arrondissement";
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
 
     /** The notification user multi contents value service. */
     // SERVICES
@@ -421,6 +424,12 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         dto.setNom( DTO_NAME_HEURE_DE_TRAITEMENT );
         dto.setValeur( MARK_HEURE_DE_TRAITEMENT );
         balises.add( dto );
+
+        dto = new BaliseFreemarkerDTO( );
+        dto.setNom( DTO_ARRONDISSEMENT );
+        dto.setValeur( MARK_ARRONDISSEMENT );
+        balises.add( dto );
+
         model.put( MARK_BALISES, balises );
 
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_NOTIFICATION_CONFIG, locale, model );
@@ -702,6 +711,15 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         String urlSondageService = DatastoreService.getDataValue( URL_SONDAGE_SERVICE, "" );
         emailModel.put( MARK_URL_SONDAGE_DEMANDE, urlSondageDemande );
         emailModel.put( MARK_URL_SONDAGE_SERVICE, urlSondageService );
+
+        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
+        }
+        else
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, "" );
+        }
 
         String messageHtml = "";
         messageHtml = AppTemplateService.getTemplateFromStringFtl( message, locale, emailModel ).getHtml( );

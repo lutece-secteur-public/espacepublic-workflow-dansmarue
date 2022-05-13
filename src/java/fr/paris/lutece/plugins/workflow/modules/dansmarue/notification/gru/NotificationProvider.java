@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,9 +237,11 @@ public class NotificationProvider implements IProvider
 
     private static final String MARK_CP_DESC = "Code postal";
 
-    private static final String MARK_ID_TYPO_LVL_1 = "id_type";
+    private static final String MARK_ID_TYPO = "id_type";
 
-    private static final String MARK_ID_TYPO_LVL_1_DESC = "Id du niveau 1 du type";
+    private static final String MARK_ID_TYPO_DESC = "Id du type de l'anomalie";
+
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
 
     /**
      * Constructor.
@@ -516,8 +518,23 @@ public class NotificationProvider implements IProvider
                         : "";
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_CP, codePostal ) );
 
-        int idTypeAnoLvl1 = TaskUtils.getIdTypeAnoLvl1( _signalement.getTypeSignalement( ) );
-        collectionNotifyGruMarkers.add( createMarkerValues( MARK_ID_TYPO_LVL_1, idTypeAnoLvl1 > -1 ? Integer.toString( idTypeAnoLvl1 ) : "" ) );
+        if ( _signalement.getTypeSignalement( ) != null && _signalement.getTypeSignalement().getId()  != null )
+        {
+            collectionNotifyGruMarkers.add( createMarkerValues( MARK_ID_TYPO, Integer.toString( _signalement.getTypeSignalement( ).getId() ) ) );
+        }
+        else
+        {
+            collectionNotifyGruMarkers.add( createMarkerValues( MARK_ID_TYPO, "") );
+        }
+
+        if ( _signalement.getArrondissement( ) != null && _signalement.getArrondissement( ).getId( ) != null )
+        {
+            collectionNotifyGruMarkers.add( createMarkerValues( MARK_ARRONDISSEMENT, String.valueOf( _signalement.getArrondissement( ).getId( ) ) ) );
+        }
+        else
+        {
+            collectionNotifyGruMarkers.add( createMarkerValues( MARK_ARRONDISSEMENT, "" ) );
+        }
 
         return collectionNotifyGruMarkers;
     }
@@ -560,7 +577,9 @@ public class NotificationProvider implements IProvider
 
         collectionNotifyGruMarkers.add( createMarkerDescriptions( MARK_CP, MARK_CP_DESC ) );
 
-        collectionNotifyGruMarkers.add( createMarkerDescriptions( MARK_ID_TYPO_LVL_1, MARK_ID_TYPO_LVL_1_DESC ) );
+        collectionNotifyGruMarkers.add( createMarkerDescriptions( MARK_ID_TYPO, MARK_ID_TYPO_DESC ) );
+
+        collectionNotifyGruMarkers.add( createMarkerDescriptions( MARK_ARRONDISSEMENT, MARK_ARRONDISSEMENT ) );
 
         return collectionNotifyGruMarkers;
 

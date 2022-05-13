@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
     private static final String URL_SONDAGE_SERVICE = "sitelabels.site_property.message.url.sondage.sevice";
     private static final String MARK_CP = "code_postal";
     private static final String MARK_ID_TYPO_LVL_1 = "id_typologie_lvl_1";
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
 
     /** The Constant PARAMETER_CHOSEN_MESSAGE. */
     // PARAMETERS
@@ -219,7 +220,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
                 : StringUtils.EMPTY;
         String attrChosenMessage = request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ) != null
                 ? request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ).toString( )
-                        : StringUtils.EMPTY;
+                : StringUtils.EMPTY;
 
         Boolean isMessageTypo = ( ( ( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) != null )
                 && Boolean.valueOf( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) ) )
@@ -264,7 +265,8 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
         }
         else
         {
-            if ( ! StringUtils.isEmpty(attrChosenMessage) || (!StringUtils.isEmpty( strChosenMessage ) && StringUtils.isEmpty( request.getParameter( MESSAGE_TYPO + Long.parseLong( strChosenMessage ) ) )) )
+            if ( !StringUtils.isEmpty( attrChosenMessage ) || ( !StringUtils.isEmpty( strChosenMessage )
+                    && StringUtils.isEmpty( request.getParameter( MESSAGE_TYPO + Long.parseLong( strChosenMessage ) ) ) ) )
             {
                 // Ajout de l'entete
                 message = DatastoreService.getDataValue( "sitelabels.site_property.message.typologie.entete.htmlblock", "" );
@@ -315,6 +317,16 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
         emailModel.put( MARK_NUMERO, signalement.getNumeroSignalement( ) );
         emailModel.put( MARK_ID_TYPE, signalement.getTypeSignalement( ).getId( ) );
         emailModel.put( MARK_TYPE, signalement.getType( ) );
+
+        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
+        }
+        else
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, "" );
+        }
+
         String aliasType = signalement.getTypeSignalement( ).getAlias( );
         if ( null == aliasType )
         {

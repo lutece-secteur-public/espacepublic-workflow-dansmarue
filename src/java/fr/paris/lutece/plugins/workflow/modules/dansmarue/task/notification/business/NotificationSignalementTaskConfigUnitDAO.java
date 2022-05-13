@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ public class NotificationSignalementTaskConfigUnitDAO
             + " FROM signalement_workflow_notification_config_unit WHERE id_task=? and id_type_signalement is null";
 
     /** The Constant SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT. */
-    private static final String SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT = "SELECT swncu.id_task,destinataires,swncu.id_type_signalement, sts.libelle , sts.fk_id_type_signalement"
+    private static final String SQL_QUERY_FIND_BY_ID_TASK_WITH_TYPE_SIGNALEMENT = "SELECT swncu.id_task,destinataires,swncu.id_type_signalement, sts.libelle , sts.fk_id_type_signalement, sts.fk_id_unit"
             + " FROM signalement_workflow_notification_config_unit swncu, signalement_type_signalement sts WHERE sts.id_type_signalement = swncu.id_type_signalement and swncu.id_task=? and swncu.id_unit is null";
 
     /** The Constant SQL_QUERY_INSERT. */
@@ -338,6 +338,9 @@ public class NotificationSignalementTaskConfigUnitDAO
             type.setLibelle( daoUtil.getString( ++nPos ) );
             TypeSignalement typeParent = new TypeSignalement( );
             typeParent.setId( daoUtil.getInt( ++nPos ) );
+            Unit unit = new Unit( );
+            unit.setIdUnit( daoUtil.getInt( ++nPos ) );
+            type.setUnit( unit );
             type.setTypeSignalementParent( typeParent );
             config.setTypeSignalement( type );
 
