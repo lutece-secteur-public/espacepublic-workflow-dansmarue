@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,6 +195,8 @@ public class NotificationUserComponent extends AbstractTaskComponent
     /** The Constant PARAMETER_TOKEN. */
     private static final String PARAMETER_TOKEN = "token";
 
+    private static final String DTO_ARRONDISSEMENT = "arrondissement";
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
     /** The signalement service. */
     // SERVICES
     @Inject
@@ -346,6 +348,15 @@ public class NotificationUserComponent extends AbstractTaskComponent
                 emailModel.put( MARK_ID_TYPO_LVL_1, StringUtils.EMPTY );
             }
 
+            if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+            {
+                emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
+            }
+            else
+            {
+                emailModel.put( MARK_ARRONDISSEMENT, "" );
+            }
+
             // Application pré filtre sur les variables
             message = AppTemplateService.getTemplateFromStringFtl( message, locale, emailModel ).getHtml( );
         }
@@ -455,6 +466,12 @@ public class NotificationUserComponent extends AbstractTaskComponent
         dto.setNom( "Lien de consultation du message" );
         dto.setValeur( MARK_LIEN_CONSULTATION );
         balises.add( dto );
+
+        dto = new BaliseFreemarkerDTO( );
+        dto.setNom( DTO_ARRONDISSEMENT );
+        dto.setValeur( MARK_ARRONDISSEMENT );
+        balises.add( dto );
+
         model.put( MARK_BALISES, balises );
 
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_NOTIFICATION_CONFIG, locale, model );

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@ public final class WorkflowSignalementConstants
 
     /** The Constant ETAT_CREATION_ENCOMBRANT. */
     public static final String ETAT_CREATION_ENCOMBRANT = "workflow.signalement.etatCreationEncombrant";
+
+    public static final String PARAMETER_WEBSERVICE_RAISON_REJET = "rejection_reason";
 
     /**
      * Costructor Can't be called.

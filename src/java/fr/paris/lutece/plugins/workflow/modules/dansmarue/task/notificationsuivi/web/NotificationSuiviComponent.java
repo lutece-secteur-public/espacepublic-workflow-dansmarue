@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -176,6 +176,13 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
     /** The Constant LABEL_HEURE_DE_TRAITEMENT. */
     private static final String LABEL_HEURE_DE_TRAITEMENT = "#i18n{module.workflow.dansmarue.task_notification_config.freemarker.heuretraitement.label}";
 
+    private static final String DTO_ARRONDISSEMENT = "arrondissement";
+
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
+
+    private static final String MARK_ID_TYPO = "id_type";
+
+    private static final String DTO_ID_TYPO = "Id du type de l'anomalie";
     /** The signalement service. */
     // SERVICES
     @Inject
@@ -300,6 +307,14 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
         dto = new BaliseFreemarkerDTO( );
         dto.setNom( LABEL_EMAIL_USAGER );
         dto.setValeur( MARK_EMAIL_USAGER );
+        balises.add( dto );
+        dto = new BaliseFreemarkerDTO( );
+        dto.setNom( DTO_ARRONDISSEMENT );
+        dto.setValeur( MARK_ARRONDISSEMENT );
+        balises.add( dto );
+        dto = new BaliseFreemarkerDTO( );
+        dto.setNom( DTO_ID_TYPO );
+        dto.setValeur( MARK_ID_TYPO );
         balises.add( dto );
 
         model.put( MARK_BALISES, balises );

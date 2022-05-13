@@ -83,13 +83,11 @@
 							<div class="<@inputStyle />">
 								<#if type_list?size != 0> 
 							
-								<input  class="form-control input-sm" id="typeSignalements" type="text" placeholder="" maxlength="255" oninput='initType();'>
-								<input id="typeSignalement" name="typeSignalement" type="hidden" value="">
-								<datalist id="idTypeSignalement">											
+								<select name="typeSignalement"  id="typeSignalement" class="selectpicker show-menu-arrow form-control" data-actions-box="true" data-live-search="true" data-size="10">
 									<#list type_list as type>
-										<option id="${type.code}" value="${type.name}">${type.name}</option>
+										<option value="${type.code}">${type.name}</option>
 									</#list>
-								</datalist>
+								</select>
 										
 								</#if>
 							</div>
@@ -158,6 +156,9 @@ $(document).ready(function() {
 		<#list type_list as type>
 			types.push("${type.name?js_string}");
 		</#list>
+		$("#typeSignalements").click(function(){
+            $(this).autocomplete("option", "minLength", 0).autocomplete("search", "");
+        });
 		$("#typeSignalements").autocomplete({
 			source: types,
 			select: function(event,ui){ $('#typeSignalements').val(ui.item.value);initType();}

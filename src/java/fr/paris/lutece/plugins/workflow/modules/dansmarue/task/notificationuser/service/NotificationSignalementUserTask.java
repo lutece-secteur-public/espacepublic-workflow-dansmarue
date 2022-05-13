@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignaleme
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationUserValue;
+import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementConstants;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
@@ -153,8 +154,6 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
     /** The Constant PARAMETER_MESSAGE_FOR_USER. */
     private static final String PARAMETER_MESSAGE_FOR_USER = "messageForUser";
 
-    private static final String PARAMETER_WEBSERVICE_RAISON_REJET = "rejection_reason";
-
     /** The signalement service. */
     // SERVICES
     private ISignalementService _signalementService = SpringContextService.getBean( "signalementService" );
@@ -169,6 +168,8 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
     // DAO
     private NotificationSignalementUserTaskConfigDAO _notificationSignalementUserTaskConfigDAO = SpringContextService
             .getBean( "signalement.notificationSignalementUserTaskConfigDAO" );
+
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
 
     /**
      * Process task.
@@ -341,17 +342,25 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
             emailModel.put( MARK_RAISONS_REJET, rejectReason );
         }
         else
-            if ( ( request != null ) && ( request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_RAISON_REJET ) != null ) )
+            if ( ( request != null ) && ( request.getSession( ).getAttribute( WorkflowSignalementConstants.PARAMETER_WEBSERVICE_RAISON_REJET ) != null ) )
             {
                 // Récupération de la raison de rejet envoyé par le prestataire via WS
-                emailModel.put( MARK_RAISONS_REJET, request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_RAISON_REJET ) );
-                request.getSession( ).removeAttribute( PARAMETER_WEBSERVICE_RAISON_REJET );
+                emailModel.put( MARK_RAISONS_REJET, request.getSession( ).getAttribute( WorkflowSignalementConstants.PARAMETER_WEBSERVICE_RAISON_REJET ) );
             }
             else
             {
                 // Sinon afin de ne pas avoir d'erreur, on set la raison de rejet à vide
                 emailModel.put( MARK_RAISONS_REJET, "" );
             }
+
+        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
+        }
+        else
+        {
+            emailModel.put( MARK_ARRONDISSEMENT, "" );
+        }
 
         String message = AppTemplateService.getTemplateFromStringFtl( "[#ftl]" + config.getMessage( ), locale, emailModel ).getHtml( );
         String subject = AppTemplateService.getTemplateFromStringFtl( config.getSubject( ), locale, emailModel ).getHtml( );

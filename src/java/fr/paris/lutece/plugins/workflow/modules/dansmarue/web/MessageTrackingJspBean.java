@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,13 +34,11 @@
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.web;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,6 +58,7 @@ import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.busi
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTaskConfigUnitService;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
+import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
@@ -120,7 +119,7 @@ public class MessageTrackingJspBean extends AbstractJspBean
     private static final String TASK_NOTIFICATION_SIGNALEMENT_NAME = AppPropertiesService
             .getProperty( "workflow.signalement.taskSignalementNotification.name" );
 
-    private static final String ID_TASK_NOTIFICATION_EXCLUDE = AppPropertiesService.getProperty( "workflow.signalement.abonnementMail.idTask.exclude" );
+    private static final String ID_TASK_NOTIFICATION_EXCLUDE = "sitelabels.site_property.taches.notification.mail.exclues";
 
     /** The Constant PARAMETER_ID_UNIT. */
     // PARAMETERS
@@ -326,20 +325,25 @@ public class MessageTrackingJspBean extends AbstractJspBean
         for ( Long idTask : idsTask )
         {
 
-            List<NotificationSignalementTaskConfigUnit> lstConfigUnit = _notificationSignalementTaskConfigUnitService.findByIdTaskWithTypeSignalement( idTask.intValue( ), getPlugin( ) );
+            List<NotificationSignalementTaskConfigUnit> lstConfigUnit = _notificationSignalementTaskConfigUnitService
+                    .findByIdTaskWithTypeSignalement( idTask.intValue( ), getPlugin( ) );
 
             for ( NotificationSignalementTaskConfigUnit configUnit : lstConfigUnit )
             {
-                long exist = listTypesUser.stream( ).filter( typeSignalement -> typeSignalement.getId( ).intValue( ) == configUnit.getTypeSignalement( ).getId( ).intValue( ) ).count( );
+                long exist = listTypesUser.stream( )
+                        .filter( typeSignalement -> typeSignalement.getId( ).intValue( ) == configUnit.getTypeSignalement( ).getId( ).intValue( ) ).count( );
 
                 if ( configUnit.getDestinataires( ).contains( mailCurrentUser ) && ( exist < 1 ) )
                 {
-                    if ( ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ) != null ) && ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ).getId( ) > 0 ) )
+                    if ( ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ) != null )
+                            && ( ( configUnit.getTypeSignalement( ).getTypeSignalementParent( ).getId( ) > 0 )
+                                    && ( configUnit.getTypeSignalement( ).getUnit( ).getIdUnit( ) > 0 ) ) )
                     {
                         listTypesUser.add( _typeSignalementService.getTypeSignalementByIdWithParents( configUnit.getTypeSignalement( ).getId( ) ) );
-                    } else
+                    }
+                    else
                     {
-                        //Abonnement type signalement de niveau 1
+                        // Abonnement type signalement de niveau 1 ou 2
                         TypeSignalement signalementN1 = new TypeSignalement( );
                         signalementN1.setId( configUnit.getTypeSignalement( ).getId( ) );
                         signalementN1.setLibelle( configUnit.getTypeSignalement( ).getLibelle( ) );
@@ -519,11 +523,8 @@ public class MessageTrackingJspBean extends AbstractJspBean
 
                     if ( listConfigUnit.isEmpty( ) )
                     {
-                        List<Long> idsTask = _signalementWorkflowService.findIdTaskByTaskKey( TASK_NOTIFICATION_SIGNALEMENT_NAME );
-                        List<Long> idTaskExclude = Arrays.asList( ID_TASK_NOTIFICATION_EXCLUDE.split( "," ) ).stream( ).map( str -> Long.valueOf( str ) )
-                                .collect( Collectors.toList( ) );
-                        idsTask.removeAll( idTaskExclude );
-                        for ( Long idTask : idsTask )
+
+                        for ( Long idTask : getNotificationTask( ) )
                         {
                             // create new line(s) in database
                             NotificationSignalementTaskConfigUnit configUnit = new NotificationSignalementTaskConfigUnit( );
@@ -616,13 +617,8 @@ public class MessageTrackingJspBean extends AbstractJspBean
 
                     if ( listConfigType.isEmpty( ) )
                     {
-                        // create new line(s) in database
-                        List<Long> idsTask = _signalementWorkflowService.findIdTaskByTaskKey( TASK_NOTIFICATION_SIGNALEMENT_NAME );
-                        List<Long> idTaskExclude = Arrays.asList( ID_TASK_NOTIFICATION_EXCLUDE.split( "," ) ).stream( ).map( str -> Long.valueOf( str ) )
-                                .collect( Collectors.toList( ) );
-                        idsTask.removeAll( idTaskExclude );
 
-                        for ( Long idTask : idsTask )
+                        for ( Long idTask : getNotificationTask( ) )
                         {
                             NotificationSignalementTaskConfigUnit configType = new NotificationSignalementTaskConfigUnit( );
                             configType.setIdTask( idTask.intValue( ) );
@@ -656,6 +652,37 @@ public class MessageTrackingJspBean extends AbstractJspBean
         }
 
         return url;
+    }
+
+    /**
+     *
+     * @return List de tache notification final
+     */
+    private List<Long> getNotificationTask( )
+    {
+
+        List<Long> idTaskToKeep = new ArrayList<>( );
+
+        List<Long> idsTask = _signalementWorkflowService.findIdTaskByTaskKey( TASK_NOTIFICATION_SIGNALEMENT_NAME );
+        String [ ] idTaskToExclude = DatastoreService.getDataValue( ID_TASK_NOTIFICATION_EXCLUDE, "" ).split( "," );
+
+        for ( Long id : idsTask )
+        {
+            boolean find = false;
+            for ( int index = 0; index < idTaskToExclude.length; index++ )
+            {
+                if ( id.intValue( ) == Integer.parseInt( idTaskToExclude [index] ) )
+                {
+                    find = true;
+                }
+            }
+            if ( !find )
+            {
+                idTaskToKeep.add( id );
+            }
+        }
+
+        return idTaskToKeep;
     }
 
     /**

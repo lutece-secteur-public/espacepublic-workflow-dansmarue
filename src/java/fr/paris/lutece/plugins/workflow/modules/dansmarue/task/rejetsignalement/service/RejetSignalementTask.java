@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
+import fr.paris.lutece.plugins.dansmarue.commons.exceptions.BusinessException;
 import fr.paris.lutece.plugins.dansmarue.service.IObservationRejetSignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
+import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
 import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
@@ -111,6 +113,10 @@ public class RejetSignalementTask extends AbstractSignalementTask
         if ( motifAutreCheckBox )
         {
             motifAutre = request.getParameter( PARAMETER_MOTIF_AUTRE );
+            if ( motifAutre == null )
+            {
+                throw new BusinessException( motifAutre, SignalementConstants.MESSAGE_ERROR_OCCUR );
+            }
             _observationRejetSignalementService.insert( idRessource, null, motifAutre );
         }
 

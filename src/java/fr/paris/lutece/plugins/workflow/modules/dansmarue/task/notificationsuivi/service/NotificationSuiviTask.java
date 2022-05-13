@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2021, City of Paris
+ * Copyright (c) 2002-2022, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@ import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignaleme
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviValue;
+import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementConstants;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.mail.MailService;
@@ -130,6 +131,10 @@ public class NotificationSuiviTask extends AbstractSignalementTask
 
     /** The Constant MARK_RAISONS_REJET. */
     private static final String MARK_RAISONS_REJET = "raisons_rejet";
+
+    private static final String MARK_ARRONDISSEMENT = "arrondissement";
+
+    private static final String MARK_ID_TYPO = "id_type";
 
     /** The signalement service. */
     @Inject
@@ -298,6 +303,36 @@ public class NotificationSuiviTask extends AbstractSignalementTask
         {
             notifModel.put( MARK_RAISONS_REJET, rejectReason );
         }
+        else
+            if ( ( request != null ) && ( request.getSession( ).getAttribute( WorkflowSignalementConstants.PARAMETER_WEBSERVICE_RAISON_REJET ) != null ) )
+            {
+                // Récupération de la raison de rejet envoyé par le prestataire via WS
+                notifModel.put( MARK_RAISONS_REJET, request.getSession( ).getAttribute( WorkflowSignalementConstants.PARAMETER_WEBSERVICE_RAISON_REJET ) );
+            }
+            else
+            {
+                // Sinon afin de ne pas avoir d'erreur, on set la raison de rejet à vide
+                notifModel.put( MARK_RAISONS_REJET, "" );
+            }
+
+        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        {
+            notifModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
+        }
+        else
+        {
+            notifModel.put( MARK_ARRONDISSEMENT, "" );
+        }
+
+        if ( signalement.getTypeSignalement( ) != null && signalement.getTypeSignalement().getId()  != null )
+        {
+            notifModel.put( MARK_ID_TYPO, signalement.getTypeSignalement().getId() );
+        }
+        else
+        {
+            notifModel.put( MARK_ID_TYPO, "" );
+        }
+
 
         // save the email (notification) in the workflow history
         NotificationSuiviValue notificationSuiviValue = new NotificationSuiviValue( );
