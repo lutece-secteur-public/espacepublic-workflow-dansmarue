@@ -100,7 +100,7 @@ public class RejetSignalementTask extends AbstractSignalementTask
         String date = sdfDate.format( Calendar.getInstance( ).getTime( ) );
 
         boolean motifAutreCheckBox = StringUtils.isNotBlank( request.getParameter( PARAMETER_MOTIF_AUTRE_CHECKBOX ) );
-        boolean motifRejetWS = StringUtils.isNotBlank( request.getParameter( PARAMETER_MOTIF_REJET_WS ) );
+        boolean motifRejetWS = StringUtils.isNotBlank( ( String ) request.getSession( ).getAttribute( PARAMETER_MOTIF_REJET_WS ) );
 
         if ( !ArrayUtils.isEmpty( motifsRejetIds ) )
         {
@@ -123,7 +123,7 @@ public class RejetSignalementTask extends AbstractSignalementTask
         // Rejet par WS pour avec un motif autre
         if ( motifRejetWS )
         {
-            motifAutre = request.getParameter( PARAMETER_MOTIF_REJET_WS );
+            motifAutre = ( String ) request.getSession( ).getAttribute( PARAMETER_MOTIF_REJET_WS );
             _observationRejetSignalementService.insert( idRessource, null, motifAutre );
         }
 
