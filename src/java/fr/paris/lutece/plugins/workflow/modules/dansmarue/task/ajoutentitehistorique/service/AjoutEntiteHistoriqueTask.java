@@ -50,6 +50,7 @@ import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.portal.business.user.AdminUser;
+import fr.paris.lutece.portal.business.user.AdminUserHome;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 
@@ -75,6 +76,8 @@ public class AjoutEntiteHistoriqueTask extends AbstractSignalementTask
     /** The unit service. */
     private IUnitService _unitService = SpringContextService.getBean( "unittree.unitService" );
 
+    private static final String PARAMETER_WEBSERVICE_EMAIL_ACTEUR = "emailActeur";
+
     /**
      * Process task.
      *
@@ -91,14 +94,15 @@ public class AjoutEntiteHistoriqueTask extends AbstractSignalementTask
 
         String labelEntite = "";
 
-        boolean signalementPrestataire = ( this.getAction( ).getStateBefore( ).getId( ) == SignalementConstants.ID_STATE_TRANSFERE_PRESTATAIRE.intValue( ) )
-                || ( this.getAction( ).getStateBefore( ).getId( ) == SignalementConstants.ID_STATE_PROGRAMME_PRESTATAIRE.intValue( ) );
+        boolean signalementPrestataire = ( getAction( ).getStateBefore( ).getId( ) == SignalementConstants.ID_STATE_TRANSFERE_PRESTATAIRE.intValue( ) )
+                || ( getAction( ).getStateBefore( ).getId( ) == SignalementConstants.ID_STATE_PROGRAMME_PRESTATAIRE.intValue( ) );
 
         if ( signalementPrestataire )
         {
             // Action prestataire effectue via WS
-            int idSignalement = this.getIdSignalement( nIdResourceHistory );
-            labelEntite = this._signalementService.findPrestataireSignalement( idSignalement );
+            int idSignalement = getIdSignalement( nIdResourceHistory );
+            labelEntite = _signalementService.findPrestataireSignalement( idSignalement );
+
         }
         else
         {
@@ -110,7 +114,14 @@ public class AjoutEntiteHistoriqueTask extends AbstractSignalementTask
 
             if ( adminUser != null )
             {
-                userUnitsList = this._unitService.getUnitsByIdUser( adminUser.getUserId( ), false );
+                userUnitsList = _unitService.getUnitsByIdUser( adminUser.getUserId( ), false );
+            } else if (request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_EMAIL_ACTEUR ) != null) {
+
+                AdminUser user = AdminUserHome.findUserByLogin( ( String ) request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_EMAIL_ACTEUR ) );
+                if (user != null) {
+                    userUnitsList = _unitService.getUnitsByIdUser( user.getUserId( ), false );
+                }
+                request.getSession( ).setAttribute(PARAMETER_WEBSERVICE_EMAIL_ACTEUR,null);
             }
             labelEntite = ( !userUnitsList.isEmpty( ) && ( userUnitsList.get( 0 ) != null ) ) ? userUnitsList.get( 0 ).getLabel( ) : "";
         }
@@ -118,7 +129,7 @@ public class AjoutEntiteHistoriqueTask extends AbstractSignalementTask
         // Stockage de l'entité
         if ( StringUtils.isNotBlank( labelEntite ) )
         {
-            this._ajoutEntiteService.create( nIdResourceHistory, this.getId( ), labelEntite );
+            _ajoutEntiteService.create( nIdResourceHistory, getId( ), labelEntite );
         }
     }
 
