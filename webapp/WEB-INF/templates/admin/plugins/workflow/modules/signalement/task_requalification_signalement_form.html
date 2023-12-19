@@ -67,6 +67,7 @@ function updateSectors(){
 		url: "jsp/admin/plugins/signalement/DoGetSectorsByGeomAndUnits.jsp",
 		async: true,
 		data: parameters,
+		dataType: "json",
 		success: function(data) {
 			var options = '<option value="-1"></option>';
 			var computedSector = data.computedSector;
@@ -86,7 +87,9 @@ function updateSectors(){
 		},
 		error: function (xhr, ajaxOptions, thrownError){
 			alert(thrownError); 
-		}   
+		},
+        complete:function (xhr, status, err) {
+		}
 	});
 }
 

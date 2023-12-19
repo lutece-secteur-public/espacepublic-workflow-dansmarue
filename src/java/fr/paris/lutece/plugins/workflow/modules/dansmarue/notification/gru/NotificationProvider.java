@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -46,11 +47,10 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signaleur;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
-import fr.paris.lutece.plugins.workflow.modules.notifygru.service.provider.IProvider;
-import fr.paris.lutece.plugins.workflow.modules.notifygru.service.provider.NotifyGruMarker;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
+import fr.paris.lutece.plugins.workflowcore.service.provider.IProvider;
+import fr.paris.lutece.plugins.workflowcore.service.provider.InfoMarker;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
@@ -208,6 +208,10 @@ public class NotificationProvider implements IProvider
 
     /** The signalement workflow service. */
     private IWorkflowService _signalementWorkflowService = SpringContextService.getBean( "signalement.workflowService" );
+
+    /** The date utils */
+    // UTILS
+    private IDateUtils _dateUtils = SpringContextService.getBean( "signalement.dateUtils" );
 
     /** The signalement. */
     private Signalement _signalement;
@@ -375,9 +379,9 @@ public class NotificationProvider implements IProvider
      * @return the collection
      */
     @Override
-    public Collection<NotifyGruMarker> provideMarkerValues( )
+    public Collection<InfoMarker> provideMarkerValues( )
     {
-        Collection<NotifyGruMarker> collectionNotifyGruMarkers = new ArrayList<>( );
+        Collection<InfoMarker> collectionNotifyGruMarkers = new ArrayList<>( );
 
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_MESSAGE, _message ) );
         // Récupérer directement de _signalement
@@ -393,41 +397,17 @@ public class NotificationProvider implements IProvider
         // Traitement nécessaire
 
         // Alias signalement
-        String aliasType = _signalement.getTypeSignalement( ).getAlias( );
-        if ( null == aliasType )
-        {
-            aliasType = StringUtils.EMPTY;
-        }
-        collectionNotifyGruMarkers.add( createMarkerValues( MARK_ALIAS_ANOMALIE, aliasType ) );
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_ALIAS_ANOMALIE, checkEmptyOrNull( _signalement.getTypeSignalement( ).getAlias( ) ) ) );
 
         // Alias mobile signalement
-        String aliasMobileType = _signalement.getTypeSignalement( ).getAliasMobile( );
-        if ( null == aliasMobileType )
-        {
-            aliasMobileType = StringUtils.EMPTY;
-        }
-        collectionNotifyGruMarkers.add( createMarkerValues( MARK_ALIAS_MOBILE_ANOMALIE, aliasMobileType ) );
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_ALIAS_MOBILE_ANOMALIE, checkEmptyOrNull( _signalement.getTypeSignalement( ).getAliasMobile( ) ) ) );
 
         // Date prévue de traiement
-        if ( StringUtils.isNotBlank( _signalement.getDatePrevueTraitement( ) ) )
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_PROGRAMMATION, _signalement.getDatePrevueTraitement( ) ) );
-        }
-        else
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_PROGRAMMATION, StringUtils.EMPTY ) );
-        }
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_PROGRAMMATION, checkEmptyOrNull( _signalement.getDatePrevueTraitement( ) ) ) );
+
 
         // Date de traitement
-        String dateDeTraitement = _signalement.getDateServiceFaitTraitement( );
-        if ( StringUtils.isNotBlank( dateDeTraitement ) )
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_DE_TRAITEMENT, dateDeTraitement ) );
-        }
-        else
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_DE_TRAITEMENT, StringUtils.EMPTY ) );
-        }
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_DE_TRAITEMENT, checkEmptyOrNull( _signalement.getDateServiceFaitTraitement( ) ) ) );
 
         // Heure de traitement
         String heureDeTraitement = _signalement.getHeureServiceFaitTraitement( );
@@ -442,21 +422,14 @@ public class NotificationProvider implements IProvider
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_HEURE_DE_TRAITEMENT, heureDeTraitement ) );
 
         // Date d'envoi
-        String dateEnvoi = _signalement.getDateCreation( );
-        if ( StringUtils.isNotBlank( dateEnvoi ) )
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_ENVOI, dateEnvoi ) );
-        }
-        else
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_ENVOI, StringUtils.EMPTY ) );
-        }
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_DATE_ENVOI, checkEmptyOrNull( _signalement.getDateCreation( ) ) ) );
+
 
         // Heure d'envoi
         Date heureEnvoiTmstp = _signalement.getHeureCreation( );
         if ( null != heureEnvoiTmstp )
         {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) ) );
+            collectionNotifyGruMarkers.add( createMarkerValues( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) ) );
         }
         else
         {
@@ -465,60 +438,25 @@ public class NotificationProvider implements IProvider
 
         // Email de l'usager
         List<Signaleur> signaleurs = _signalement.getSignaleurs( );
-        String emailUsager = StringUtils.EMPTY;
-        if ( CollectionUtils.isNotEmpty( signaleurs ) )
-        {
-            for ( Signaleur signaleur : signaleurs )
-            {
-                if ( !signaleur.getMail( ).isEmpty( ) )
-                {
-                    emailUsager = signaleur.getMail( );
-                }
-            }
-        }
-        collectionNotifyGruMarkers.add( createMarkerValues( MARK_EMAIL_USAGER, emailUsager ) );
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_EMAIL_USAGER, findMailSignaleur(signaleurs) ) );
 
         // Précisions adresse
-        if ( _signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) != null )
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_PRECISION, _signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) ) );
-        }
-        else
-        {
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_PRECISION, "" ) );
-        }
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_PRECISION, checkEmptyOrNull(_signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) ) ));
 
         // Raisons rejets
         List<ObservationRejet> motifsRejet = _signalement.getObservationsRejet( );
-
-        // Construction de la variable raisons_rejet
-        if ( CollectionUtils.isNotEmpty( motifsRejet ) )
-        {
-            StringBuilder motifsRejetStr = new StringBuilder( );
-            if ( CollectionUtils.isNotEmpty( motifsRejet ) )
-            {
-                for ( int i = 0; i < motifsRejet.size( ); i++ )
-                {
-                    String motifRejet = motifsRejet.get( i ).getLibelle( );
-                    motifsRejetStr.append( MOTIF_REJET_PREPEND ).append( motifRejet );
-                    if ( i < ( motifsRejet.size( ) - 1 ) )
-                    {
-                        motifsRejetStr.append( MOTIF_REJET_SEPARATOR );
-                    }
-                }
-            }
-            collectionNotifyGruMarkers.add( createMarkerValues( MARK_RAISONS_REJET, motifsRejetStr.toString( ) ) );
-        }
+        StringBuilder motifsRejetStr = new StringBuilder( );
+        collectionNotifyGruMarkers.add( createMarkerValues( MARK_RAISONS_REJET, buildRasionRejet( motifsRejetStr, motifsRejet ) ) );
 
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_URL_SONDAGE_DEMANDE, DatastoreService.getDataValue( URL_SONDAGE_DEMANDE, "" ) ) );
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_URL_SONDAGE_SERVICE, DatastoreService.getDataValue( URL_SONDAGE_SERVICE, "" ) ) );
 
-        String codePostal = _signalement.getAdresses( ) != null && _signalement.getAdresses( ).get( 0 ) != null
-                && _signalement.getAdresses( ).get( 0 ).getAdresse( ) != null ? TaskUtils.getCPFromAdresse( _signalement.getAdresses( ).get( 0 ).getAdresse( ) )
+        String codePostal = ( _signalement.getAdresses( ) != null ) && ( _signalement.getAdresses( ).get( 0 ) != null )
+                && ( _signalement.getAdresses( ).get( 0 ).getAdresse( ) != null ) ? TaskUtils.getCPFromAdresse( _signalement.getAdresses( ).get( 0 ).getAdresse( ) )
                         : "";
         collectionNotifyGruMarkers.add( createMarkerValues( MARK_CP, codePostal ) );
 
-        if ( _signalement.getTypeSignalement( ) != null && _signalement.getTypeSignalement().getId()  != null )
+        if ( ( _signalement.getTypeSignalement( ) != null ) && ( _signalement.getTypeSignalement().getId()  != null ) )
         {
             collectionNotifyGruMarkers.add( createMarkerValues( MARK_ID_TYPO, Integer.toString( _signalement.getTypeSignalement( ).getId() ) ) );
         }
@@ -527,7 +465,7 @@ public class NotificationProvider implements IProvider
             collectionNotifyGruMarkers.add( createMarkerValues( MARK_ID_TYPO, "") );
         }
 
-        if ( _signalement.getArrondissement( ) != null && _signalement.getArrondissement( ).getId( ) != null )
+        if ( ( _signalement.getArrondissement( ) != null ) && ( _signalement.getArrondissement( ).getId( ) != null ) )
         {
             collectionNotifyGruMarkers.add( createMarkerValues( MARK_ARRONDISSEMENT, String.valueOf( _signalement.getArrondissement( ).getId( ) ) ) );
         }
@@ -539,15 +477,76 @@ public class NotificationProvider implements IProvider
         return collectionNotifyGruMarkers;
     }
 
+
+    /**
+     *
+     * @param elementToCheck
+     * @return
+     */
+    private String checkEmptyOrNull( String elementToCheck )
+    {
+
+        if ( StringUtils.isBlank( elementToCheck ) )
+        {
+            return StringUtils.EMPTY;
+        } else
+        {
+            return elementToCheck;
+        }
+    }
+
+    /**
+     *
+     * @param signaleurs
+     * @return
+     */
+    private String findMailSignaleur( List<Signaleur> signaleurs )
+    {
+
+        String emailUsager = StringUtils.EMPTY;
+        if ( CollectionUtils.isNotEmpty( signaleurs ) )
+        {
+            for ( Signaleur signaleur : signaleurs )
+            {
+                if ( !signaleur.getMail( ).isEmpty( ) )
+                {
+                    emailUsager = signaleur.getMail( );
+                }
+            }
+        }
+
+        return emailUsager;
+    }
+
+    private String buildRasionRejet( StringBuilder motifsRejetStr, List<ObservationRejet> motifsRejet )
+    {
+        // Construction de la variable raisons_rejet
+
+        if ( CollectionUtils.isNotEmpty( motifsRejet ) )
+        {
+            int motifsRejetSize = motifsRejet.size( );
+            for ( int i = 0; i < motifsRejetSize; i++ )
+            {
+                String motifRejet = motifsRejet.get( i ).getLibelle( );
+                motifsRejetStr.append( MOTIF_REJET_PREPEND ).append( motifRejet );
+                if ( i < ( motifsRejetSize - 1 ) )
+                {
+                    motifsRejetStr.append( MOTIF_REJET_SEPARATOR );
+                }
+            }
+        }
+
+        return motifsRejetStr.toString( );
+    }
     /**
      * Gives the marker descriptions.
      *
      * @return the marker descritions
      */
-    public static Collection<NotifyGruMarker> provideMarkerDescriptions( )
+    public static Collection<InfoMarker> provideMarkerDescriptions( )
     {
 
-        Collection<NotifyGruMarker> collectionNotifyGruMarkers = new ArrayList<>( );
+        Collection<InfoMarker> collectionNotifyGruMarkers = new ArrayList<>( );
 
         collectionNotifyGruMarkers.add( createMarkerDescriptions( MARK_MESSAGE, MARK_MESSAGE_DESC ) );
 
@@ -595,9 +594,9 @@ public class NotificationProvider implements IProvider
      * @return the {@code NotifyGruMarker} object
      */
 
-    private static NotifyGruMarker createMarkerValues( String strMarker, String strValue )
+    private static InfoMarker createMarkerValues( String strMarker, String strValue )
     {
-        NotifyGruMarker notifyGruMarker = new NotifyGruMarker( strMarker );
+        InfoMarker notifyGruMarker = new InfoMarker( strMarker );
         notifyGruMarker.setValue( strValue );
 
         return notifyGruMarker;
@@ -612,9 +611,9 @@ public class NotificationProvider implements IProvider
      *            the description to inject into the {@code NotifyGruMarker} object
      * @return the {@code NotifyGruMarker} object
      */
-    private static NotifyGruMarker createMarkerDescriptions( String strMarker, String strDescription )
+    private static InfoMarker createMarkerDescriptions( String strMarker, String strDescription )
     {
-        NotifyGruMarker notifyGruMarker = new NotifyGruMarker( strMarker );
+        InfoMarker notifyGruMarker = new InfoMarker( strMarker );
         notifyGruMarker.setDescription( strDescription );
 
         return notifyGruMarker;

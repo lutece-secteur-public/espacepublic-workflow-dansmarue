@@ -41,7 +41,8 @@ import javax.servlet.http.HttpServletRequest;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.impl.SignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
@@ -67,6 +68,10 @@ public class ProgrammationSignalementTask extends AbstractSignalementTask
 
     /** The signalement workflow service. */
     private IWorkflowService _signalementWorkflowService = SpringContextService.getBean( "signalement.workflowService" );
+
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
 
     /**
      * Process task.
@@ -96,7 +101,7 @@ public class ProgrammationSignalementTask extends AbstractSignalementTask
         }
         else
         {
-            SignalementUtils.populate( signalementTemp, request );
+            _signalementUtils.populate( signalementTemp, request );
         }
 
         Signalement signalement = _signalementService.getSignalement( signalementTemp.getId( ) );

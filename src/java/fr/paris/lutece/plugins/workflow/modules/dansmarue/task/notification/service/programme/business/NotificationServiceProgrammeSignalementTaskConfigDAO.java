@@ -159,8 +159,9 @@ public class NotificationServiceProgrammeSignalementTaskConfigDAO implements ITa
 
         if ( !idsUnit.isEmpty( ) )
         {
-            Object [ ] qMarks = new Object [ idsUnit.size( )];
-            for ( int i = 0; i < idsUnit.size( ); i++ )
+            int idsUnitSize = idsUnit.size( );
+            Object [ ] qMarks = new Object [ idsUnitSize];
+            for ( int i = 0; i < idsUnitSize; i++ )
             {
                 qMarks [i] = '?';
             }

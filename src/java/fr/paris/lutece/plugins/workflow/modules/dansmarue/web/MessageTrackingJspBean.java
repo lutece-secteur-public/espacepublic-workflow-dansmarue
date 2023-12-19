@@ -33,27 +33,16 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.web;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
 import fr.paris.lutece.plugins.dansmarue.service.role.SignalementViewRoleService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
 import fr.paris.lutece.plugins.dansmarue.web.AbstractJspBean;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigUnit;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTaskConfigUnitService;
 import fr.paris.lutece.portal.business.user.AdminUser;
@@ -67,6 +56,16 @@ import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * the MessageTrackingJspBean class.
@@ -137,6 +136,8 @@ public class MessageTrackingJspBean extends AbstractJspBean
     /** The Constant PARAMETER_NO_UNIT_SELECTED. */
     private static final String PARAMETER_NO_UNIT_SELECTED = "-1";
 
+    private static final String PARAMETER_NO_TYPE_SELECTED = "-1";
+
     /** The Constant PARAMETER_TYPE_ID_TYPE. */
     private static final String PARAMETER_TYPE_ID_TYPE = "typeSignalement";
 
@@ -149,7 +150,7 @@ public class MessageTrackingJspBean extends AbstractJspBean
 
     /** The unit service. */
     // SERVICES
-    private transient IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private transient IUnitService _unitService = SpringContextService.getBean( UnitService.BEAN_UNIT_SERVICE );
 
     /** The notification signalement task config unit service. */
     private transient NotificationSignalementTaskConfigUnitService _notificationSignalementTaskConfigUnitService = SpringContextService
@@ -163,6 +164,10 @@ public class MessageTrackingJspBean extends AbstractJspBean
 
     /** The signalement workflow service. */
     private transient IWorkflowService _signalementWorkflowService = SpringContextService.getBean( "signalement.workflowService" );
+
+    /** The list utils */
+    // UTILS
+    private transient IListUtils _listUtils = SpringContextService.getBean( "signalement.listUtils" );
 
     /**
      * signalement.signalementViewRoleService The tracking message management page
@@ -204,7 +209,7 @@ public class MessageTrackingJspBean extends AbstractJspBean
             }
         }
         sortListEntitiesAlphabetical( listAllAllowedUnits );
-        ReferenceList listeUnits = ListUtils.toReferenceList( listAllAllowedUnits, PARAMETER_ID_UNIT, "label", "" );
+        ReferenceList listeUnits = _listUtils.toReferenceList( listAllAllowedUnits, PARAMETER_ID_UNIT, "label", "" );
         model.put( MARK_UNITS_LIST, listeUnits );
 
         // Get the entities already linked to the user email (notification enabled)
@@ -238,7 +243,7 @@ public class MessageTrackingJspBean extends AbstractJspBean
         /******* TYPES *******/
 
         sortListTypeSignalementAlphabetical( types );
-        ReferenceList listeTypes = ListUtils.toReferenceList( types, "id", "formatTypeSignalement", "", false );
+        ReferenceList listeTypes = _listUtils.toReferenceList( types, "id", "formatTypeSignalement", "", false );
         model.put( MARK_TYPE_LIST, listeTypes );
 
         // Get the report types already linked to the user email (notification enabled)
@@ -582,7 +587,7 @@ public class MessageTrackingJspBean extends AbstractJspBean
 
             String strIdTypeSignalement = request.getParameter( PARAMETER_TYPE_ID_TYPE );
 
-            if ( StringUtils.EMPTY.equals( strIdTypeSignalement ) )
+            if ( PARAMETER_NO_TYPE_SELECTED.equals( strIdTypeSignalement ) )
             {
                 url = AdminMessageService.getMessageUrl( request, MESSAGE_ERROR_NO_TYPE_SELECTED, AdminMessage.TYPE_STOP );
             }

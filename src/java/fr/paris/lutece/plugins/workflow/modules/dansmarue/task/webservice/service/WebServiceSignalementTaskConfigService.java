@@ -39,7 +39,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.impl.SignalementUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfig;
@@ -72,6 +73,11 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
     @Named( "unittree.unitService" )
     private IUnitService _unitService;
 
+    /** The signalement utils */
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
     /**
      * Add a new WebServiceSignalementTask configuration.
      *
@@ -80,7 +86,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void insert( WebServiceSignalementTaskConfigDTO configDTO )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
 
         WebServiceSignalementTaskConfig config = new WebServiceSignalementTaskConfig( );
         config.setIdTask( configDTO.getIdTask( ) );
@@ -95,7 +101,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void insertUnit( WebServiceSignalementTaskConfigUnit configUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _webserviceSignalementTaskConfigUnitDAO.insert( configUnit, plugin );
     }
 
@@ -107,7 +113,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void update( WebServiceSignalementTaskConfigDTO configDTO )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
 
         WebServiceSignalementTaskConfig config = new WebServiceSignalementTaskConfig( );
         config.setIdTask( configDTO.getIdTask( ) );
@@ -122,7 +128,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void updateUnit( WebServiceSignalementTaskConfigUnit configUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _webserviceSignalementTaskConfigUnitDAO.update( configUnit, plugin );
     }
 
@@ -136,7 +142,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
     @Override
     public WebServiceSignalementTaskConfigDTO findByPrimaryKey( int nIdTask )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         WebServiceSignalementTaskConfigDTO configDTO = null;
 
         WebServiceSignalementTaskConfig config = _webserviceSignalementTaskConfigDAO.findByPrimaryKey( nIdTask, plugin );
@@ -170,7 +176,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public WebServiceSignalementTaskConfigUnit findUnitByPrimaryKey( int nIdTask, int nIdUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         return _webserviceSignalementTaskConfigUnitDAO.findByPrimaryKey( nIdTask, nIdUnit, plugin );
     }
 
@@ -182,7 +188,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void delete( int nIdTask )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _webserviceSignalementTaskConfigUnitDAO.deleteAll( nIdTask, plugin );
         _webserviceSignalementTaskConfigDAO.delete( nIdTask, plugin );
     }
@@ -197,7 +203,7 @@ public class WebServiceSignalementTaskConfigService extends TaskConfigService
      */
     public void deleteUnit( int nIdTask, int nIdUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _webserviceSignalementTaskConfigUnitDAO.delete( nIdTask, nIdUnit, plugin );
     }
 

@@ -31,73 +31,41 @@
  *
  * License 1.0
  */
-package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.programmationsignalement.web;
+package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutcommentaireagentterrain.web;
 
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
-import fr.paris.lutece.plugins.dansmarue.commons.exceptions.BusinessException;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.impl.SignalementUtils;
-import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
+import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
 import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
-import fr.paris.lutece.portal.service.message.AdminMessage;
-import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
-import fr.paris.lutece.portal.service.util.AppLogService;
-import fr.paris.lutece.util.beanvalidation.BeanValidationUtil;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * The Class ProgrammationComponent.
+ * ServiceFaitComponent.
  */
-public class ProgrammationComponent extends AbstractTaskComponent
+public class AjoutCommentaireAgentTerrainComponent extends AbstractTaskComponent
 {
 
     /** The Constant TEMPLATE_TASK_FORM. */
-    private static final String TEMPLATE_TASK_FORM = "admin/plugins/workflow/modules/signalement/task_programmation_signalement_form.html";
-
-    /** The Constant MESSAGE_WRONG_DATE. */
-    // MESSAGES
-    private static final String MESSAGE_WRONG_DATE = "module.workflow.dansmarue.programmation.wrongdate";
-
-    /** The Constant MESSAGE_ERROR_EXCEPTION. */
-    private static final String MESSAGE_ERROR_EXCEPTION = "module.workflow.dansmarue.programmation.errordate";
-
-    /** The Constant MESSAGE_ERROR_EMPTY_DATE. */
-    private static final String MESSAGE_ERROR_EMPTY_DATE = "module.workflow.dansmarue.programmation.error.emptydate";
-
-    /** The Constant MARK_SIGNALEMENT_ID. */
-    // MARKERS
-    private static final String MARK_SIGNALEMENT_ID = "signalement_id";
-
-    /** The Constant EMPTY_STRING. */
-    // CONSTANTS
-    private static final String EMPTY_STRING = "";
+    // TEMPLATES
+    private static final String TEMPLATE_TASK_FORM = "admin/plugins/workflow/modules/signalement/task_ajout_commentaire_agent_terrain_form.html";
+    private static final String TEMPLATE_TASK_INFORMATION = "admin/plugins/workflow/modules/signalement/task_ajout_commentaire_agent_terrain_information.html";
+    public static final String MARK_SIGNALEMENT = "signalement";
+    public static final String MARK_ANCIEN_COMMENTAIRE_AGENT_TERRAIN = "ancienCommentaireAgentTerrain";
 
     /** The signalement service. */
     // SERVICES
     @Inject
     @Named( "signalementService" )
     private ISignalementService _signalementService;
-
-    /** The signalement utils */
-    // UTILS
-    @Inject
-    @Named( "signalement.signalementUtils" )
-    private ISignalementUtils _signalementUtils;
 
     /**
      * Gets the display task form.
@@ -118,12 +86,10 @@ public class ProgrammationComponent extends AbstractTaskComponent
     public String getDisplayTaskForm( int nIdResource, String strResourceType, HttpServletRequest request, Locale locale, ITask task )
     {
         Map<String, Object> model = new HashMap<>( );
+        model.put( SignalementConstants.MARK_LOCALE, locale );
 
         Signalement signalement = _signalementService.getSignalement( nIdResource );
-
-        // get the signalement
-        model.put( MARK_SIGNALEMENT_ID, signalement.getId( ) );
-        model.put( "locale", Locale.FRANCE );
+        model.put( MARK_SIGNALEMENT, signalement );
 
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_FORM, locale, model );
 
@@ -163,7 +129,12 @@ public class ProgrammationComponent extends AbstractTaskComponent
     @Override
     public String getDisplayTaskInformation( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
     {
-        return null;
+        Map<String, Object> model = new HashMap<>( );
+        model.put( MARK_ANCIEN_COMMENTAIRE_AGENT_TERRAIN, _signalementService.getHistoriqueCommentaireAgentTerrain( nIdHistory ) );
+
+        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_INFORMATION, locale, model );
+
+        return template.getHtml( );
     }
 
     /**
@@ -184,40 +155,7 @@ public class ProgrammationComponent extends AbstractTaskComponent
     @Override
     public String doValidateTask( int nIdResource, String strResourceType, HttpServletRequest request, Locale locale, ITask task )
     {
-        Signalement signalementTemp = new Signalement( );
-        _signalementUtils.populate( signalementTemp, request );
-
-        Set<ConstraintViolation<Signalement>> errors = BeanValidationUtil.validate( signalementTemp );
-        if ( !errors.isEmpty( ) )
-        {
-            return TaskUtils.getValidationErrorsMessage( signalementTemp, locale, errors, request );
-        }
-
-        if ( !signalementTemp.getDatePrevueTraitement( ).equals( EMPTY_STRING ) )
-        {
-            SimpleDateFormat sdfDate = new SimpleDateFormat( "dd/MM/yyyy" );
-            try
-            {
-                Date datePrevueTraitement = sdfDate.parse( signalementTemp.getDatePrevueTraitement( ) );
-                Date dateDuJour = sdfDate.parse( sdfDate.format( Calendar.getInstance( ).getTime( ) ) );
-                if ( dateDuJour.after( datePrevueTraitement ) )
-                {
-                    return AdminMessageService.getMessageUrl( request, MESSAGE_WRONG_DATE, AdminMessage.TYPE_STOP );
-                }
-
-            }
-            catch( Exception e )
-            {
-                AppLogService.error( e );
-                // Invalid date was entered
-                throw new BusinessException( signalementTemp, MESSAGE_ERROR_EXCEPTION );
-            }
-        }
-        else
-        {
-            return AdminMessageService.getMessageUrl( request, MESSAGE_ERROR_EMPTY_DATE, AdminMessage.TYPE_STOP );
-        }
-
         return null;
     }
+
 }

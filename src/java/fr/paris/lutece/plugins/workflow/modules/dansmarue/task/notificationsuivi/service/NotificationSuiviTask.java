@@ -56,14 +56,14 @@ import fr.paris.lutece.plugins.dansmarue.service.IObservationRejetService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementSuiviService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviValue;
+import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.IWorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementConstants;
-import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.mail.MailService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -161,6 +161,22 @@ public class NotificationSuiviTask extends AbstractSignalementTask
     @Named( "observationRejetService" )
     private IObservationRejetService _observationRejetService;
 
+    /** The signalement utils */
+    // UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
+    /** The date utils. */
+    @Inject
+    @Named( "signalement.dateUtils" )
+    private IDateUtils _dateUtils;
+
+    /** The workflow signalement utils */
+    @Inject
+    @Named( "signalement.workflowSignalementUtil" )
+    private IWorkflowSignalementUtil _workflowSignalementUtils;
+
     /**
      * Process task.
      *
@@ -179,7 +195,7 @@ public class NotificationSuiviTask extends AbstractSignalementTask
         Signalement signalement = _signalementService.getSignalementWithFullPhoto( idRessource );
 
         // get the config
-        NotificationSuiviTaskConfig config = _notificationSuiviTaskConfigDAO.load( getId( ), SignalementUtils.getPlugin( ) );
+        NotificationSuiviTaskConfig config = _notificationSuiviTaskConfigDAO.load( getId( ), _signalementUtils.getPlugin( ) );
 
         List<String> followersMails = _signalementSuiviService.findUsersMailByIdSignalement( idRessource );
         if ( CollectionUtils.isEmpty( followersMails ) )
@@ -270,7 +286,7 @@ public class NotificationSuiviTask extends AbstractSignalementTask
         Date heureEnvoiTmstp = signalement.getHeureCreation( );
         if ( null != heureEnvoiTmstp )
         {
-            notifModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+            notifModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
         }
         else
         {
@@ -297,7 +313,7 @@ public class NotificationSuiviTask extends AbstractSignalementTask
             followersMails.remove( emailUsager );
         }
 
-        String rejectReason = WorkflowSignalementUtil.buildValueMotifRejetForEmailNotification( request,
+        String rejectReason = _workflowSignalementUtils.buildValueMotifRejetForEmailNotification( request,
                 _observationRejetService.getAllObservationRejetActif( ) );
         if ( StringUtils.isNotBlank( rejectReason ) )
         {
@@ -315,7 +331,7 @@ public class NotificationSuiviTask extends AbstractSignalementTask
                 notifModel.put( MARK_RAISONS_REJET, "" );
             }
 
-        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        if ( ( signalement.getArrondissement( ) != null ) && ( signalement.getArrondissement( ).getId( ) != null ) )
         {
             notifModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
         }
@@ -324,7 +340,7 @@ public class NotificationSuiviTask extends AbstractSignalementTask
             notifModel.put( MARK_ARRONDISSEMENT, "" );
         }
 
-        if ( signalement.getTypeSignalement( ) != null && signalement.getTypeSignalement().getId()  != null )
+        if ( ( signalement.getTypeSignalement( ) != null ) && ( signalement.getTypeSignalement().getId()  != null ) )
         {
             notifModel.put( MARK_ID_TYPO, signalement.getTypeSignalement().getId() );
         }
@@ -364,19 +380,17 @@ public class NotificationSuiviTask extends AbstractSignalementTask
                 if ( ( photo.getImage( ) != null ) && ( photo.getImage( ).getImage( ) != null ) )
                 {
 
-                    String [ ] mime = photo.getImage( ).getMimeType( ).split( "/" );
+                    String mime = photo.getImage( ).getMimeType( ).contains( "/" ) ? photo.getImage( ).getMimeType( ).split( "/" )[1] : photo.getImage( ).getMimeType( );
+                    String fileAttachmentMime = SignalementConstants.MIME_TYPE_START + mime;
 
                     if ( photo.getVue( ) == 1 )
                     {
 
-                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime [1], photo.getImage( ).getImage( ),
-                                photo.getImage( ).getMimeType( ) ) );
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
 
-                    }
-                    else
+                    } else
                     {
-                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime [1], photo.getImage( ).getImage( ),
-                                photo.getImage( ).getMimeType( ) ) );
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
                     }
                 }
             }
@@ -424,8 +438,8 @@ public class NotificationSuiviTask extends AbstractSignalementTask
     @Override
     public void doRemoveConfig( )
     {
-        _notificationSuiviTaskConfigDAO.delete( getId( ), SignalementUtils.getPlugin( ) );
-        _notificationSuiviValueService.removeByTask( getId( ), SignalementUtils.getPlugin( ) );
+        _notificationSuiviTaskConfigDAO.delete( getId( ), _signalementUtils.getPlugin( ) );
+        _notificationSuiviValueService.removeByTask( getId( ), _signalementUtils.getPlugin( ) );
     }
 
     /**

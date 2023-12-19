@@ -53,9 +53,9 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.Signaleur;
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
-import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.modules.dansmarue.service.unit.IUnitSiraService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigUnit;
@@ -72,10 +72,6 @@ import fr.paris.lutece.util.url.UrlItem;
  */
 public class NotificationSignalementTask extends AbstractSignalementTask
 {
-
-    /** The Constant PROPERTY_BASE_URL. */
-    // PROPERTIES
-    private static final String PROPERTY_BASE_URL = "lutece.prod.url";
 
     /** The Constant MARK_NUMERO. */
     // MARKERS
@@ -139,14 +135,17 @@ public class NotificationSignalementTask extends AbstractSignalementTask
 
     /** The unit service. */
     // SERVICES
-    private IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private transient IUnitSiraService _unitSiraService = SpringContextService.getBean( "unittree-dansmarue.unitSiraService" );
 
     /** The notification signalement task config service. */
-    private NotificationSignalementTaskConfigService _notificationSignalementTaskConfigService = SpringContextService
-            .getBean( "signalement.notificationSignalementTaskConfigService" );
+    private NotificationSignalementTaskConfigService _notificationSignalementTaskConfigService = SpringContextService.getBean( "signalement.notificationSignalementTaskConfigService" );
 
     /** The signalement service. */
+    // UTILS
     private ISignalementService _signalementService = SpringContextService.getBean( "signalementService" );
+
+    /** The date utils */
+    private IDateUtils _dateUtils = SpringContextService.getBean( "signalement.dateUtils" );
 
     /**
      * Process task.
@@ -250,7 +249,7 @@ public class NotificationSignalementTask extends AbstractSignalementTask
                 Date heureEnvoiTmstp = signalement.getHeureCreation( );
                 if ( null != heureEnvoiTmstp )
                 {
-                    emailModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+                    emailModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
                 }
                 else
                 {
@@ -265,24 +264,19 @@ public class NotificationSignalementTask extends AbstractSignalementTask
                     if ( ( photo.getImage( ) != null ) && ( photo.getImage( ).getImage( ) != null ) )
                     {
 
-                        String [ ] mime = photo.getImage( ).getMimeType( ).split( "/" );
+                        String mime = photo.getImage( ).getMimeType( ).contains( "/" ) ? photo.getImage( ).getMimeType( ).split( "/" )[1] : photo.getImage( ).getMimeType( );
+                        String fileAttachmentMime = SignalementConstants.MIME_TYPE_START + mime;
 
                         if ( photo.getVue( ).intValue( ) == SignalementConstants.OVERVIEW )
                         {
-                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime [1], photo.getImage( ).getImage( ),
-                                    photo.getImage( ).getMimeType( ) ) );
+                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
+                        } else if ( photo.getVue( ).intValue( ) == SignalementConstants.SERVICE_DONE_VIEW )
+                        {
+                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_SERVICE_FAIT_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
+                        } else
+                        {
+                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
                         }
-                        else
-                            if ( photo.getVue( ).intValue( ) == SignalementConstants.SERVICE_DONE_VIEW )
-                            {
-                                files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_SERVICE_FAIT_PJ + mime [1], photo.getImage( ).getImage( ),
-                                        photo.getImage( ).getMimeType( ) ) );
-                            }
-                            else
-                            {
-                                files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime [1], photo.getImage( ).getImage( ),
-                                        photo.getImage( ).getMimeType( ) ) );
-                            }
                     }
                 }
 
@@ -341,7 +335,7 @@ public class NotificationSignalementTask extends AbstractSignalementTask
     {
         List<String> resultList = new ArrayList<>( );
 
-        List<Unit> unitsLinkedToTheSector = _unitService.findBySectorId( idSector );
+        List<Unit> unitsLinkedToTheSector = _unitSiraService.findBySectorId( idSector );
         List<Unit> unitsToNotify = _notificationSignalementTaskConfigService.getListUnitToNotify( configDTOUnit );
 
         List<TypeSignalement> typesToNotify = _notificationSignalementTaskConfigService.getListTypeToNotify( configDTOTypeSignalement, signalement );
@@ -354,6 +348,19 @@ public class NotificationSignalementTask extends AbstractSignalementTask
                 unitsToNotifySector.add( unitSector );
             }
         }
+
+        addEmailToNotify( resultList, unitsToNotifySector );
+        addEmailToNotify( resultList, typesToNotify );
+
+        return resultList;
+    }
+
+    /**
+     * Get emails to notify from unit list.
+     * @param resultList
+     * @param unitsToNotifySector
+     */
+    private void addEmailToNotify(List<String> resultList, Set<Unit> unitsToNotifySector ) {
 
         for ( Unit unitToNotify : unitsToNotifySector )
         {
@@ -375,6 +382,14 @@ public class NotificationSignalementTask extends AbstractSignalementTask
             }
 
         }
+    }
+
+    /**
+     * Get emails to notify from type signalement
+     * @param resultList
+     * @param typesToNotify
+     */
+    private void addEmailToNotify(List<String> resultList, List<TypeSignalement> typesToNotify ) {
 
         for ( TypeSignalement typeToNotify : typesToNotify )
         {
@@ -395,10 +410,7 @@ public class NotificationSignalementTask extends AbstractSignalementTask
                 }
 
             }
-
         }
-
-        return resultList;
     }
 
     // Ecriture de cette méthode car la méthode de la classe List ne se base pas su les valeurs des parametres

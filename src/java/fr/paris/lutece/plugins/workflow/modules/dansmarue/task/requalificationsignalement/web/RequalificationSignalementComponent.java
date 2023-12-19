@@ -33,21 +33,6 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationsignalement.web;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Adresse;
 import fr.paris.lutece.plugins.dansmarue.business.entities.PhotoDMR;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
@@ -61,8 +46,8 @@ import fr.paris.lutece.plugins.dansmarue.service.ISignaleurService;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.leaflet.modules.dansmarue.entities.Address;
 import fr.paris.lutece.plugins.leaflet.modules.dansmarue.service.IAddressSuggestPOIService;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
@@ -83,6 +68,19 @@ import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.beanvalidation.BeanValidationUtil;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * RequalificationSignalementComponent.
@@ -225,6 +223,17 @@ public class RequalificationSignalementComponent extends AbstractTaskComponent
     @Named( "addressSuggestPOIService" )
     private IAddressSuggestPOIService _addressSuggestPOIService;
 
+    /** The signalement utils */
+    // UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
+    /** The date utils. */
+    @Inject
+    @Named( "signalement.listUtils" )
+    private IListUtils _listUtils;
+
     /**
      * Gets the display task form.
      *
@@ -313,7 +322,7 @@ public class RequalificationSignalementComponent extends AbstractTaskComponent
 
             List<Sector> sectors = _sectorService.findSectorsByDirectionsAndGeom( adresse.getLng( ), adresse.getLat( ),
                     AppPropertiesService.getPropertyInt( PROPERTY_UNITS_RADIUS, 0 ), idUnits );
-            ReferenceList sectorList = ListUtils.toReferenceList( sectors, "idSector", "name", "", false );
+            ReferenceList sectorList = _listUtils.toReferenceList( sectors, "idSector", "name", "", false );
             model.put( MARK_SECTEUR_LIST, sectorList );
         }
 
@@ -399,25 +408,6 @@ public class RequalificationSignalementComponent extends AbstractTaskComponent
     }
 
     /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
      * Do validate task.
      *
      * @param nIdResource
@@ -436,7 +426,7 @@ public class RequalificationSignalementComponent extends AbstractTaskComponent
     public String doValidateTask( int nIdResource, String strResourceType, HttpServletRequest request, Locale locale, ITask task )
     {
         RequalificationDTO requalification = new RequalificationDTO( );
-        SignalementUtils.populate( requalification, request );
+        _signalementUtils.populate( requalification, request );
 
         Set<ConstraintViolation<RequalificationDTO>> errors = BeanValidationUtil.validate( requalification );
         if ( !errors.isEmpty( ) )

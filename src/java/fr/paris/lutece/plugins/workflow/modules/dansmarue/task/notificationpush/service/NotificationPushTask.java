@@ -44,9 +44,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsService;
@@ -59,14 +60,13 @@ import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementSuiviService;
 import fr.paris.lutece.plugins.dansmarue.service.impl.AndroidPushService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationpush.business.NotificationPushTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationpush.business.NotificationPushTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationpush.business.NotificationPushValue;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
+import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
 /**
@@ -74,9 +74,6 @@ import fr.paris.lutece.portal.service.util.AppPropertiesService;
  */
 public class NotificationPushTask extends AbstractSignalementTask
 {
-
-    /** The Constant LOGGER. */
-    private static final Logger LOGGER = Logger.getLogger( NotificationPushTask.class );
 
     /** The Constant TASK_TITLE. */
     // TITLE
@@ -166,6 +163,16 @@ public class NotificationPushTask extends AbstractSignalementTask
     @Named( "signalementSuiviService" )
     private ISignalementSuiviService _signalementSuiviService;
 
+    /** The signalement utils */
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
+    /** The date utils. */
+    @Inject
+    @Named( "signalement.dateUtils" )
+    private IDateUtils _dateUtils;
+
     /**
      * Process task.
      *
@@ -184,7 +191,7 @@ public class NotificationPushTask extends AbstractSignalementTask
         Signalement signalement = _signalementService.getSignalementWithFullPhoto( idRessource );
 
         // get the config
-        NotificationPushTaskConfig config = _notificationPushTaskConfigDAO.load( getId( ), SignalementUtils.getPlugin( ) );
+        NotificationPushTaskConfig config = _notificationPushTaskConfigDAO.load( getId( ), _signalementUtils.getPlugin( ) );
 
         List<SiraUser> receiver = new ArrayList<>( );
         if ( config.getIsDiffusionSuiveur( ) )
@@ -287,7 +294,7 @@ public class NotificationPushTask extends AbstractSignalementTask
         Date heureEnvoiTmstp = signalement.getHeureCreation( );
         if ( null != heureEnvoiTmstp )
         {
-            notifModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+            notifModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
         }
         else
         {
@@ -333,20 +340,20 @@ public class NotificationPushTask extends AbstractSignalementTask
                 // iOS
                 if ( StringUtils.equals( SignalementConstants.SIGNALEMENT_PREFIX_IOS, siraUser.getDevice( ) ) )
                 {
-                    LOGGER.info( "Ajout d'un recever IOS" );
+                    AppLogService.info( "Ajout d'un recever IOS" );
                     iOsTokens.add( siraUser.getToken( ) );
                 }
 
                 // Android
                 if ( StringUtils.equals( SignalementConstants.SIGNALEMENT_PREFIX_ANDROID, siraUser.getDevice( ) ) )
                 {
-                    LOGGER.info( "Ajout d'un recever Android" );
+                    AppLogService.info( "Ajout d'un recever Android" );
                     androidTokens.add( siraUser.getToken( ) );
                 }
 
             }
 
-            LOGGER.info( "Début de l'envoi de notifs push Android" );
+            AppLogService.info( "Début de l'envoi de notifs push Android" );
             // Push android
             if ( CollectionUtils.isNotEmpty( androidTokens ) )
             {
@@ -360,13 +367,13 @@ public class NotificationPushTask extends AbstractSignalementTask
                 }
             }
 
-            LOGGER.info( "Fin de l'envoi de notifs push Android" );
+            AppLogService.info( "Fin de l'envoi de notifs push Android" );
 
-            LOGGER.info( "Début de l'envoi de notifs push IOS" );
+            AppLogService.info( "Début de l'envoi de notifs push IOS" );
             // Push iOS
             if ( CollectionUtils.isNotEmpty( iOsTokens ) )
             {
-                LOGGER.info( "Préparation de l'envoi de notifs push IOS" );
+                AppLogService.info( "Préparation de l'envoi de notifs push IOS" );
                 try
                 {
                     String certPwd = AppPropertiesService.getProperty( PROPERTY_CERT_CRED );
@@ -374,7 +381,7 @@ public class NotificationPushTask extends AbstractSignalementTask
                     boolean isApnsProd = AppPropertiesService.getPropertyBoolean( PROPERTY_APNS_PROD, false );
 
                     ApnsService service = APNS.newService( ).withCert( certPath, certPwd ).withAppleDestination( isApnsProd ).build( );
-                    LOGGER.info( "Initialisation du service de notif push IOS OK" );
+                    AppLogService.info( "Initialisation du service de notif push IOS OK" );
                     for ( String iosToken : iOsTokens )
                     {
                         PayloadBuilder payload = APNS.newPayload( );
@@ -387,10 +394,10 @@ public class NotificationPushTask extends AbstractSignalementTask
                 }
                 catch( Exception ex )
                 {
-                    LOGGER.error( "Erreur lors l'initialisation du service de push ios", ex );
+                    AppLogService.error( "Erreur lors l'initialisation du service de push ios", ex );
                 }
             }
-            LOGGER.info( "Fin de l'envoi de notifs push IOS" );
+            AppLogService.info( "Fin de l'envoi de notifs push IOS" );
 
             notificationPushValue.setMobileNotificationValue( message );
             _notificationPushValueService.create( notificationPushValue );
@@ -412,12 +419,12 @@ public class NotificationPushTask extends AbstractSignalementTask
     {
         try
         {
-            LOGGER.info( "Envoi de la notif push IOS" );
+            AppLogService.info( "Envoi de la notif push IOS" );
             service.push( iosToken, payload.build( ) );
         }
         catch( Exception e )
         {
-            LOGGER.error( "Erreur lors de l'envoi du push iOS vers " + iosToken, e );
+            AppLogService.error( "Erreur lors de l'envoi du push iOS vers " + iosToken, e );
         }
     }
 
@@ -453,8 +460,8 @@ public class NotificationPushTask extends AbstractSignalementTask
     @Override
     public void doRemoveConfig( )
     {
-        _notificationPushTaskConfigDAO.delete( getId( ), SignalementUtils.getPlugin( ) );
-        _notificationPushValueService.removeByTask( getId( ), SignalementUtils.getPlugin( ) );
+        _notificationPushTaskConfigDAO.delete( getId( ), _signalementUtils.getPlugin( ) );
+        _notificationPushValueService.removeByTask( getId( ), _signalementUtils.getPlugin( ) );
     }
 
     /**

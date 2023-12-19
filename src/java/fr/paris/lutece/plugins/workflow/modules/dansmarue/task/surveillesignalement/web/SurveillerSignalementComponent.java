@@ -33,20 +33,19 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.surveillesignalement.web;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
 import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.util.html.HtmlTemplate;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * SurveillerSignalementComponent.
@@ -150,25 +149,6 @@ public class SurveillerSignalementComponent extends AbstractTaskComponent
      */
     @Override
     public String getDisplayTaskInformation( int arg0, HttpServletRequest arg1, Locale arg2, ITask arg3 )
-    {
-        return null;
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param arg0
-     *            the arg 0
-     * @param arg1
-     *            the arg 1
-     * @param arg2
-     *            the arg 2
-     * @param arg3
-     *            the arg 3
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int arg0, HttpServletRequest arg1, Locale arg2, ITask arg3 )
     {
         return null;
     }

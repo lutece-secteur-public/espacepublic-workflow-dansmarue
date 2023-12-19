@@ -69,6 +69,10 @@
 	<bean id="signalement.ajoutEntiteService"
 		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutentitehistorique.service.AjoutEntiteService" />
 
+	<!-- UTILS -->
+	<bean id="signalement.workflowSignalementUtil"
+		  class="fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.impl.WorkflowSignalementUtil" />
+
 	<!-- creation signalement-->
 	<bean id="workflow-signalement.creationSignalement"
 		class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
@@ -376,5 +380,17 @@
 		scope="prototype" />
 	<bean id="workflow-signalement.ajoutEntiteHistoriqueComponent"
 		class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutentitehistorique.web.AjoutEntiteHistoriqueComponent"
-		p:taskType-ref="workflow-signalement.ajoutEntiteHistorique" />	
+		p:taskType-ref="workflow-signalement.ajoutEntiteHistorique" />
+
+	<!-- ajout commentaire agent terrain -->
+	<bean id="workflow-signalement.ajoutCommentaireAgentTerrain"
+		  class="fr.paris.lutece.plugins.workflowcore.business.task.TaskType"
+		  p:key="taskAjoutCommentaireAgentTerrain" p:titleI18nKey="module.workflow.dansmarue.ajoutCommentaireAgentTerrain"
+		  p:beanName="workflow-signalement.ajoutCommentaireAgentTerrainTask" p:formTaskRequired="true"/>
+	<bean id="workflow-signalement.ajoutCommentaireAgentTerrainTask"
+		  class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutcommentaireagentterrain.AjoutCommentaireAgentTerrainTask"
+		  scope="prototype" />
+	<bean id="workflow-signalement.ajoutCommentaireAgentTerrainComponent"
+		  class="fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutcommentaireagentterrain.web.AjoutCommentaireAgentTerrainComponent"
+		  p:taskType-ref="workflow-signalement.ajoutCommentaireAgentTerrain" />
 </beans>

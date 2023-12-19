@@ -33,16 +33,15 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.notification.gru;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
+import fr.paris.lutece.plugins.workflowcore.service.provider.AbstractProviderManager;
+import fr.paris.lutece.plugins.workflowcore.service.provider.IProvider;
+import fr.paris.lutece.plugins.workflowcore.service.provider.ProviderDescription;
+import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
 
 import javax.servlet.http.HttpServletRequest;
-
-import fr.paris.lutece.plugins.workflow.modules.notifygru.service.provider.AbstractProviderManager;
-import fr.paris.lutece.plugins.workflow.modules.notifygru.service.provider.IProvider;
-import fr.paris.lutece.plugins.workflow.modules.notifygru.service.provider.ProviderDescription;
-import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
-import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * NotificationProviderManager.

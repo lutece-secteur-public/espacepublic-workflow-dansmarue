@@ -51,7 +51,7 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.Signaleur;
 import fr.paris.lutece.plugins.dansmarue.service.IMessageTypologieService;
 import fr.paris.lutece.plugins.dansmarue.service.impl.SignalementService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationSignalementUserMultiContentsTaskConfig;
@@ -156,6 +156,10 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
     private NotificationSignalementUserMultiContentsTaskConfigDAO _notificationSignalementUserMultiContentsTaskConfigDAO = SpringContextService
             .getBean( "signalement.notificationSignalementUserMultiContentsTaskConfigDAO" );
 
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
+
     /**
      * Process task.
      *
@@ -220,7 +224,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
                 : StringUtils.EMPTY;
         String attrChosenMessage = request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ) != null
                 ? request.getSession( ).getAttribute( PARAMETER_CHOSEN_MESSAGE ).toString( )
-                : StringUtils.EMPTY;
+                        : StringUtils.EMPTY;
 
         Boolean isMessageTypo = ( ( ( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) != null )
                 && Boolean.valueOf( request.getParameter( PARAMETER_IS_MESSAGE_TYPO ) ) )
@@ -235,7 +239,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
             if ( !strChosenMessage.isEmpty( ) )
             {
                 config = _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( Long.parseLong( strChosenMessage ),
-                        SignalementUtils.getPlugin( ) );
+                        _signalementUtils.getPlugin( ) );
                 // Vérifie si on a pas modifié le message de base
                 if ( !config.getMessage( ).equals( request.getParameter( PARAMETER_MESSAGE_CONTENT + Long.parseLong( strChosenMessage ) ) ) )
                 {
@@ -251,15 +255,15 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
                 if ( !attrChosenMessage.isEmpty( ) && ( !"ramen_ok".equals( attrChosenMessage ) ) && ( !"ramen_ko".equals( attrChosenMessage ) ) )
                 {
                     config = _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( Long.parseLong( attrChosenMessage ),
-                            SignalementUtils.getPlugin( ) );
+                            _signalementUtils.getPlugin( ) );
                     message = config.getMessage( );
                 }
                 else
                 {
                     List<Long> listIdMessageTask = _notificationSignalementUserMultiContentsTaskConfigDAO.selectAllMessageTask( getId( ),
-                            SignalementUtils.getPlugin( ) );
+                            _signalementUtils.getPlugin( ) );
                     config = _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( listIdMessageTask.get( 0 ),
-                            SignalementUtils.getPlugin( ) );
+                            _signalementUtils.getPlugin( ) );
                     message = config.getMessage( );
                 }
         }
@@ -302,8 +306,8 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
         if ( message == null )
         {
             List<Long> listIdMessageTask = _notificationSignalementUserMultiContentsTaskConfigDAO.selectAllMessageTask( getId( ),
-                    SignalementUtils.getPlugin( ) );
-            config = _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( listIdMessageTask.get( 0 ), SignalementUtils.getPlugin( ) );
+                    _signalementUtils.getPlugin( ) );
+            config = _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( listIdMessageTask.get( 0 ), _signalementUtils.getPlugin( ) );
             message = config.getMessage( );
         }
         String messageFormat = message.replaceAll( "\r\n", "<br />" ).replaceAll( "\r|\n", "<br />" );
@@ -318,7 +322,7 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
         emailModel.put( MARK_ID_TYPE, signalement.getTypeSignalement( ).getId( ) );
         emailModel.put( MARK_TYPE, signalement.getType( ) );
 
-        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        if ( ( signalement.getArrondissement( ) != null ) && ( signalement.getArrondissement( ).getId( ) != null ) )
         {
             emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
         }
@@ -418,26 +422,21 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
             {
                 if ( ( photo.getImage( ) != null ) && ( photo.getImage( ).getImage( ) != null ) )
                 {
-                    String [ ] mime = photo.getImage( ).getMimeType( ).split( "/" );
+                    String mime = photo.getImage( ).getMimeType( ).contains( "/" ) ? photo.getImage( ).getMimeType( ).split( "/" )[1] : photo.getImage( ).getMimeType( );
+                    String fileAttachmentMime = SignalementConstants.MIME_TYPE_START + mime;
 
                     if ( photo.getVue( ).intValue( ) == SignalementConstants.OVERVIEW )
                     {
 
-                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime [1], photo.getImage( ).getImage( ),
-                                photo.getImage( ).getMimeType( ) ) );
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
 
+                    } else if ( photo.getVue( ).intValue( ) == SignalementConstants.SERVICE_DONE_VIEW )
+                    {
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_SERVICE_FAIT_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
+                    } else
+                    {
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime, photo.getImage( ).getImage( ), fileAttachmentMime ) );
                     }
-                    else
-                        if ( photo.getVue( ).intValue( ) == SignalementConstants.SERVICE_DONE_VIEW )
-                        {
-                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_SERVICE_FAIT_PJ + mime [1], photo.getImage( ).getImage( ),
-                                    photo.getImage( ).getMimeType( ) ) );
-                        }
-                        else
-                        {
-                            files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime [1], photo.getImage( ).getImage( ),
-                                    photo.getImage( ).getMimeType( ) ) );
-                        }
                 }
             }
 
@@ -478,8 +477,8 @@ public class NotificationSignalementUserMultiContentsTask extends AbstractSignal
     @Override
     public void doRemoveConfig( )
     {
-        _notificationSignalementUserMultiContentsTaskConfigDAO.delete( getId( ), SignalementUtils.getPlugin( ) );
-        _notificationUserMultiContentsValueService.removeByTask( getId( ), SignalementUtils.getPlugin( ) );
+        _notificationSignalementUserMultiContentsTaskConfigDAO.delete( getId( ), _signalementUtils.getPlugin( ) );
+        _notificationUserMultiContentsValueService.removeByTask( getId( ), _signalementUtils.getPlugin( ) );
 
     }
 

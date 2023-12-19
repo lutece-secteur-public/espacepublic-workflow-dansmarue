@@ -33,18 +33,11 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.web;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.commons.exceptions.FunctionnalException;
 import fr.paris.lutece.plugins.dansmarue.web.AbstractJspBean;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfigUnit;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service.WebServiceSignalementTaskConfigService;
 import fr.paris.lutece.plugins.workflow.utils.WorkflowUtils;
@@ -57,6 +50,12 @@ import fr.paris.lutece.portal.web.constants.Messages;
 import fr.paris.lutece.util.beanvalidation.ValidationError;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The class WebServiceSignalementTaskConfigJspBean.
@@ -108,7 +107,7 @@ public class WebServiceSignalementTaskConfigJspBean extends AbstractJspBean
             .getBean( "signalement.webserviceSignalementTaskConfigService" );
 
     /** The unit service. */
-    private transient IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private transient IUnitService _unitService = SpringContextService.getBean( UnitService.BEAN_UNIT_SERVICE );
 
     /**
      * Return AdminMessage page content to confirm the webserviceSignalementTaskUnit delete.

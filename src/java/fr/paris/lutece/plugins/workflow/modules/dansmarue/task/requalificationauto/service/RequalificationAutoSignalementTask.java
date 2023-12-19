@@ -33,14 +33,6 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.service;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Adresse;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.IAdresseService;
@@ -49,6 +41,7 @@ import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.modules.dansmarue.business.sector.Sector;
 import fr.paris.lutece.plugins.unittree.modules.dansmarue.service.sector.ISectorService;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.business.RequalificationAutoConfigUnit;
 import fr.paris.lutece.plugins.workflowcore.business.state.State;
@@ -60,6 +53,12 @@ import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Tache de requalification automatique de signalements.
@@ -105,7 +104,7 @@ public class RequalificationAutoSignalementTask extends AbstractSignalementTask
             .getBean( "workflow-signalement.requalificationAutoConfigService" );
 
     /** The unit service. */
-    private IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private IUnitService _unitService = SpringContextService.getBean( UnitService.BEAN_UNIT_SERVICE );
 
     /** The signalement service. */
     private ISignalementService _signalementService = SpringContextService.getBean( "signalementService" );

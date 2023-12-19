@@ -33,26 +33,16 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.programme.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signaleur;
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
+import fr.paris.lutece.plugins.unittree.modules.dansmarue.service.unit.IUnitSiraService;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.programme.business.NotificationServiceProgrammeSignalementTaskConfigDTO;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
@@ -61,6 +51,16 @@ import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * NotificationSignalementTask class
@@ -72,36 +72,40 @@ public class NotificationServiceProgrammeSignalementServiceProgrammeTask extends
     private static final String PROPERTY_BASE_URL = "lutece.prod.url";
 
     // MARKERS
-    private static final String MARK_NUMERO = "numero";
-    private static final String MARK_TYPE = "type";
-    private static final String MARK_ADRESSE = "adresse";
-    private static final String MARK_PRIORITE = "priorite";
-    private static final String MARK_DESCRIPTION = "description";
-    private static final String MARK_PRECISION = "precision";
-    private static final String MARK_LIEN_CONSULT = "lien";
+    private static final String MARK_NUMERO              = "numero";
+    private static final String MARK_TYPE                = "type";
+    private static final String MARK_ADRESSE             = "adresse";
+    private static final String MARK_PRIORITE            = "priorite";
+    private static final String MARK_DESCRIPTION         = "description";
+    private static final String MARK_PRECISION           = "precision";
+    private static final String MARK_LIEN_CONSULT        = "lien";
     private static final String MARK_LIEN_SIGNALEMENT_WS = "wsSignalement";
-    private static final String MARK_DATE_ENVOI = "dateEnvoi";
-    private static final String MARK_HEURE_ENVOI = "heureEnvoi";
-    private static final String MARK_EMAIL_USAGER = "emailUsager";
-    private static final String MARK_ID_ANOMALIE = "id_anomalie";
-    private static final String MARK_ALIAS_ANOMALIE = "alias_anomalie";
-    private static final String MARK_DATE_PROGRAMMATION = "date_programmation";
+    private static final String MARK_DATE_ENVOI          = "dateEnvoi";
+    private static final String MARK_HEURE_ENVOI         = "heureEnvoi";
+    private static final String MARK_EMAIL_USAGER        = "emailUsager";
+    private static final String MARK_ID_ANOMALIE         = "id_anomalie";
+    private static final String MARK_ALIAS_ANOMALIE      = "alias_anomalie";
+    private static final String MARK_DATE_PROGRAMMATION  = "date_programmation";
 
     // PARAMETERS
     private static final String PARAMETER_ID_SIGNALEMENT = "signalement_id";
-    private static final String PARAMETER_PAGE = "page";
-    private static final String PARAMETER_ID = "id";
-    private static final String PARAMETER_TOKEN = "token";
+    private static final String PARAMETER_PAGE           = "page";
+    private static final String PARAMETER_ID             = "id";
+    private static final String PARAMETER_TOKEN          = "token";
 
     // JSP
-    private static final String JSP_VIEW_SIGNALEMENT = "jsp/admin/plugins/signalement/ViewSignalement.jsp";
+    private static final String JSP_VIEW_SIGNALEMENT              = "jsp/admin/plugins/signalement/ViewSignalement.jsp";
     private static final String JSP_MANAGE_SIGNALEMENT_WITHOUT_WS = "jsp/site/Portal.jsp";
 
     // SERVICES
-    private NotificationServiceProgrammeSignalementTaskConfigService _notificationSignalementTaskConfigService = SpringContextService
-            .getBean( "signalement.notificationServiceProgrammeSignalementTaskConfigService" );
-    private ISignalementService _signalementService = SpringContextService.getBean( "signalementService" );
-    private IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private           NotificationServiceProgrammeSignalementTaskConfigService _notificationSignalementTaskConfigService = SpringContextService.getBean(
+            "signalement.notificationServiceProgrammeSignalementTaskConfigService" );
+    private           ISignalementService                                      _signalementService                       = SpringContextService.getBean( "signalementService" );
+    private           IUnitService                                             _unitService                              = SpringContextService.getBean( UnitService.BEAN_UNIT_SERVICE );
+    private transient IUnitSiraService _unitSiraService = SpringContextService.getBean( "unittree-dansmarue.unitSiraService" );
+
+    /** The date utils */
+    private transient IDateUtils       _dateUtils       = SpringContextService.getBean( "signalement.dateUtils" );
 
     @Override
     public void processTask( int nIdResourceHistory, HttpServletRequest request, Locale locale )
@@ -120,7 +124,7 @@ public class NotificationServiceProgrammeSignalementServiceProgrammeTask extends
         getTypeSignalementService( ).getAllSousTypeSignalementCascade( typeSignalementId, listeTypeSignalement );
 
         // Récupération des units via le secteur
-        List<Unit> units = _unitService.findBySectorId( signalement.getSecteur( ).getIdSector( ) );
+        List<Unit> units = _unitSiraService.findBySectorId( signalement.getSecteur( ).getIdSector( ) );
         List<Integer> idsUnit = new ArrayList<>( );
 
         units.forEach( unit -> idsUnit.add( unit.getIdUnit( ) ) );
@@ -201,7 +205,7 @@ public class NotificationServiceProgrammeSignalementServiceProgrammeTask extends
             Date heureEnvoiTmstp = signalement.getHeureCreation( );
             if ( null != heureEnvoiTmstp )
             {
-                emailModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+                emailModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
             }
             else
             {

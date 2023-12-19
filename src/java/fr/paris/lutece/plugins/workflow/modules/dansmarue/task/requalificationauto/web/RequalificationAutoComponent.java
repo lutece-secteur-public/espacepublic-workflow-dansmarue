@@ -33,22 +33,11 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.web;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.business.RequalificationAutoConfigUnit;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.business.RequalificationAutoUnitDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.requalificationauto.service.RequalificationAutoSignalementTaskConfigService;
@@ -63,6 +52,16 @@ import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.workflow.WorkflowService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * RequalificationAutoComponent.
@@ -103,7 +102,7 @@ public class RequalificationAutoComponent extends AbstractTaskComponent
 
     /** The unit service. */
     @Inject
-    @Named( IUnitService.BEAN_UNIT_SERVICE )
+    @Named( UnitService.BEAN_UNIT_SERVICE )
     private IUnitService _unitService;
 
     /** The type signalement service. */
@@ -113,6 +112,12 @@ public class RequalificationAutoComponent extends AbstractTaskComponent
     /** The action service. */
     @Inject
     private IActionService _actionService;
+
+    /** The date utils. */
+    // UTILS
+    @Inject
+    @Named( "signalement.listUtils" )
+    private IListUtils _listUtils;
 
     /**
      * Gets the display task form.
@@ -151,11 +156,11 @@ public class RequalificationAutoComponent extends AbstractTaskComponent
     {
         List<Unit> listUnits = _unitService.getAllUnits( false );
         List<Unit> listFirstLevelUnits = _unitService.getUnitsFirstLevel( false );
-        ReferenceList refListUnits = ListUtils.toReferenceList( listUnits, "idUnit", "label", StringUtils.EMPTY, false );
-        ReferenceList refListFirstLevelUnits = ListUtils.toReferenceList( listFirstLevelUnits, "idUnit", "label", StringUtils.EMPTY, false );
+        ReferenceList refListUnits = _listUtils.toReferenceList( listUnits, "idUnit", "label", StringUtils.EMPTY, false );
+        ReferenceList refListFirstLevelUnits = _listUtils.toReferenceList( listFirstLevelUnits, "idUnit", "label", StringUtils.EMPTY, false );
 
         List<RequalificationAutoConfigUnit> listRequalifUnits = _requalificationAutoSignalementTaskConfigService.findByTaskId( task.getId( ) );
-        ReferenceList refListTypeSignalement = ListUtils.toReferenceList( _typeSignalementService.getAllTypeSignalement( ), PROPERTY_ID,
+        ReferenceList refListTypeSignalement = _listUtils.toReferenceList( _typeSignalementService.getAllTypeSignalement( ), PROPERTY_ID,
                 "formatTypeSignalement", I18nService.getLocalizedString( MESSAGE_EVERY_TYPE_SIGNALEMENT, locale ), false );
         Action currentAction = _actionService.findByPrimaryKey( task.getAction( ).getId( ) );
         List<State> listStates = new ArrayList<>( );
@@ -165,7 +170,7 @@ public class RequalificationAutoComponent extends AbstractTaskComponent
             listStates.add( state );
         }
 
-        ReferenceList refListStates = ListUtils.toReferenceList( listStates, "id", "name", I18nService.getLocalizedString( MESSAGE_NO_STATE_AFTER, locale ),
+        ReferenceList refListStates = _listUtils.toReferenceList( listStates, "id", "name", I18nService.getLocalizedString( MESSAGE_NO_STATE_AFTER, locale ),
                 false );
 
         List<RequalificationAutoUnitDTO> listDTO = _requalificationAutoSignalementTaskConfigService.convertRequalifAutoUnitsToDTO( listRequalifUnits, listUnits,
@@ -198,25 +203,6 @@ public class RequalificationAutoComponent extends AbstractTaskComponent
      */
     @Override
     public String getDisplayTaskInformation( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
     {
         return null;
     }

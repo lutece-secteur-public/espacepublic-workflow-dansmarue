@@ -43,6 +43,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -50,7 +51,6 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.MessageTypologie;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.IMessageTypologieService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.dto.BaliseFreemarkerDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationSignalementUserMultiContentsTaskConfig;
@@ -231,6 +231,12 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
     @Named( "messageTypologieService" )
     private IMessageTypologieService _messageTypologieService;
 
+    /** The signalement utils */
+    //UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
     /**
      * Gets the display task form.
      *
@@ -320,12 +326,12 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
     private List<NotificationSignalementUserMultiContentsTaskConfig> getNotificationUserMultiContentsMessages( ITask task )
     {
         List<Long> listIdMessageTask = _notificationSignalementUserMultiContentsTaskConfigDAO.selectAllMessageTask( task.getId( ),
-                SignalementUtils.getPlugin( ) );
+                _signalementUtils.getPlugin( ) );
         List<NotificationSignalementUserMultiContentsTaskConfig> config = new ArrayList<>( );
 
         for ( Long idMessage : listIdMessageTask )
         {
-            config.add( _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( idMessage, SignalementUtils.getPlugin( ) ) );
+            config.add( _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( idMessage, _signalementUtils.getPlugin( ) ) );
         }
         return config;
     }
@@ -507,13 +513,13 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
                 return AdminMessageService.getMessageUrl( request, MESSAGE_MANDATORY_FIELD, tabRequiredFields, AdminMessage.TYPE_STOP );
             }
 
-            if ( _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( config.getIdMessage( ), SignalementUtils.getPlugin( ) ) == null )
+            if ( _notificationSignalementUserMultiContentsTaskConfigDAO.findByPrimaryKey( config.getIdMessage( ), _signalementUtils.getPlugin( ) ) == null )
             {
-                _notificationSignalementUserMultiContentsTaskConfigDAO.insert( config, task.getId( ), SignalementUtils.getPlugin( ) );
+                _notificationSignalementUserMultiContentsTaskConfigDAO.insert( config, task.getId( ), _signalementUtils.getPlugin( ) );
             }
             else
             {
-                _notificationSignalementUserMultiContentsTaskConfigDAO.update( config, SignalementUtils.getPlugin( ) );
+                _notificationSignalementUserMultiContentsTaskConfigDAO.update( config, _signalementUtils.getPlugin( ) );
             }
         }
 
@@ -547,25 +553,6 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_NOTIFICATION_USER_INFORMATION, locale, model );
 
         return template.getHtml( );
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
     }
 
     /**
@@ -636,43 +623,20 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         emailModel.put( MARK_TYPE, signalement.getType( ) );
 
         // Alias de l'anomalie
-        String aliasType = signalement.getTypeSignalement( ).getAlias( );
-        if ( null == aliasType )
-        {
-            aliasType = StringUtils.EMPTY;
-        }
-        emailModel.put( MARK_ALIAS_ANOMALIE, aliasType );
+        emailModel.put( MARK_ALIAS_ANOMALIE, checkEmptyNull( signalement.getTypeSignalement( ).getAlias( ) ) );
+
 
         emailModel.put( MARK_ADRESSE, signalement.getAdresses( ).get( 0 ).getAdresse( ) );
-        if ( signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) != null )
-        {
-            emailModel.put( MARK_PRECISION, signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) );
-        }
-        else
-        {
-            emailModel.put( MARK_PRECISION, "" );
-        }
+
+        emailModel.put( MARK_PRECISION, checkEmptyNull(signalement.getAdresses( ).get( 0 ).getPrecisionLocalisation( ) ));
+
         emailModel.put( MARK_PRIORITE, signalement.getPrioriteName( ) );
         emailModel.put( MARK_COMMENTAIRE, signalement.getCommentaire( ) );
         emailModel.put( MARK_LIEN_CONSULTATION, _signalementService.getLienConsultation( signalement, request ) );
-        if ( StringUtils.isNotBlank( signalement.getDatePrevueTraitement( ) ) )
-        {
-            emailModel.put( MARK_DATE_PROGRAMMATION, signalement.getDatePrevueTraitement( ) );
-        }
-        else
-        {
-            emailModel.put( MARK_DATE_PROGRAMMATION, StringUtils.EMPTY );
-        }
-        String dateDeTraitement = signalement.getDateServiceFaitTraitement( );
 
-        if ( StringUtils.isNotBlank( dateDeTraitement ) )
-        {
-            emailModel.put( MARK_DATE_DE_TRAITEMENT, dateDeTraitement );
-        }
-        else
-        {
-            emailModel.put( MARK_DATE_DE_TRAITEMENT, StringUtils.EMPTY );
-        }
+        emailModel.put( MARK_DATE_PROGRAMMATION, checkEmptyNull(signalement.getDatePrevueTraitement( ) ));
+        emailModel.put( MARK_DATE_DE_TRAITEMENT, checkEmptyNull( signalement.getDateServiceFaitTraitement( ) ) );
+
         String heureDeTraitement = signalement.getHeureServiceFaitTraitement( );
         if ( StringUtils.isNotBlank( heureDeTraitement ) )
         {
@@ -712,7 +676,7 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         emailModel.put( MARK_URL_SONDAGE_DEMANDE, urlSondageDemande );
         emailModel.put( MARK_URL_SONDAGE_SERVICE, urlSondageService );
 
-        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        if ( ( signalement.getArrondissement( ) != null ) && ( signalement.getArrondissement( ).getId( ) != null ) )
         {
             emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
         }
@@ -724,6 +688,21 @@ public class NotificationUserMultiContentsComponent extends AbstractTaskComponen
         String messageHtml = "";
         messageHtml = AppTemplateService.getTemplateFromStringFtl( message, locale, emailModel ).getHtml( );
         return messageHtml;
+    }
+
+
+    /**
+     * checkEmptyNull.
+     * @param element
+     * @return
+     */
+    private String checkEmptyNull(String element) {
+        if (StringUtils.isBlank( element )) {
+            return StringUtils.EMPTY;
+        } else {
+            return element;
+        }
+
     }
 
 }

@@ -46,7 +46,7 @@ import fr.paris.lutece.plugins.dansmarue.service.IAdresseService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.modules.dansmarue.business.sector.Sector;
 import fr.paris.lutece.plugins.unittree.modules.dansmarue.service.sector.ISectorService;
@@ -75,6 +75,12 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
 
     /** The Constant PARAM_COMMENTAIRE_AGENT_TERRAIN. */
     private static final String PARAM_COMMENTAIRE_AGENT_TERRAIN = "commentaireAgentTerrain";
+
+    /** The Constant PARAMETER_WEBSERVICE_EMAIL_ACTEUR. */
+    private static final String PARAMETER_WEBSERVICE_EMAIL_ACTEUR = "emailActeur";
+
+    /** The Constant PARAMETER_WEBSERVICE_COMMENT_VALUE. */
+    private static final String PARAMETER_WEBSERVICE_COMMENT_VALUE = "webservice_comment_value";
 
     /** The Constant MARK_PHOTOS. */
     // MARKERS
@@ -112,6 +118,10 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
     /** The sector service. */
     private ISectorService _sectorService = SpringContextService.getBean( "unittree-dansmarue.sectorService" );
 
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
+
     /**
      * Process task.
      *
@@ -126,7 +136,8 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
     public void processTask( int nIdResourceHistory, HttpServletRequest request, Locale locale )
     {
         RequalificationDTO requalification = new RequalificationDTO( );
-        SignalementUtils.populate( requalification, request );
+        _signalementUtils.populate( requalification, request );
+
 
         if ( request.getSession( ).getAttribute( PARAM_ID_SECTOR ) != null )
         {
@@ -137,41 +148,25 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
         }
 
         Adresse adresse = null;
+        Signalement signalement = null;
+        ResourceHistory resourceHistory = _resourceHistoryService.findByPrimaryKey( nIdResourceHistory );
 
         if ( request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_ID_TYPE_ANOMALIE ) != null )
         {
-            // La tache est execute suite a l'appel du WS "rest/signalement/api/changeStatus" par un prestataire
-            long idTypeAnomalie = (long) request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_ID_TYPE_ANOMALIE );
-            request.getSession( ).removeAttribute( PARAMETER_WEBSERVICE_ID_TYPE_ANOMALIE );
-            requalification.setTypeSignalement( (int) idTypeAnomalie );
-
-            ResourceHistory resourceHistory = _resourceHistoryService.findByPrimaryKey( nIdResourceHistory );
-            requalification.setIdSignalement( resourceHistory.getIdResource( ) );
 
             adresse = _adresseService.loadByIdSignalement( resourceHistory.getIdResource( ) );
             requalification.setLng( adresse.getLng( ) );
             requalification.setLat( adresse.getLat( ) );
 
-            // Secteur calculé par défaut de l'anomalie
-            Unit majorUnit = _signalementService.getMajorUnit( (int) idTypeAnomalie, requalification.getLng( ), requalification.getLat( ) );
-            Sector computedSector = null;
-            if ( null != majorUnit )
-            {
-                computedSector = _sectorService.getSectorByGeomAndUnit( requalification.getLng( ), requalification.getLat( ), majorUnit.getIdUnit( ) );
-            }
-
-            if ( null != computedSector )
-            {
-                requalification.setSector( computedSector.getIdSector( ) );
-            }
+            signalement =  _signalementService.getSignalement( resourceHistory.getIdResource( ) );
+            processSubTaskforChangeStatusCase(request, requalification, resourceHistory, signalement);
         }
-
-        Integer idSignalement = requalification.getIdSignalement( );
-        Signalement signalement = _signalementService.getSignalement( idSignalement );
-
-        // changement de l'adresse
-        if ( adresse == null )
+        else
         {
+
+            Integer idSignalement = requalification.getIdSignalement( );
+            signalement =  _signalementService.getSignalement( idSignalement );
+            // changement de l'adresse
             adresse = _adresseService.loadByIdSignalement( signalement.getId( ) );
             adresse.setAdresse( requalification.getAdresseRequalif( ) );
             adresse.setLat( requalification.getLat( ) );
@@ -179,6 +174,10 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
 
             signalement.getAdresses( ).remove( 0 );
             signalement.getAdresses( ).add( adresse );
+
+            _signalementService.saveRequalification( signalement.getId( ), signalement.getTypeSignalement( ).getId( ),
+                    signalement.getAdresses( ).get( 0 ).getAdresse( ), signalement.getSecteur( ).getIdSector( ), getId( ),
+                    resourceHistory.getId( ), signalement.getCommentaireAgentTerrain( ) );
 
         }
 
@@ -231,6 +230,49 @@ public class RequalificationSignalementTask extends AbstractSignalementTask
             AppLogService.error( "Signalement : Workflow not available" );
         }
 
+    }
+
+
+    private void processSubTaskforChangeStatusCase(HttpServletRequest request, RequalificationDTO requalification, ResourceHistory resourceHistory , Signalement signalement) {
+
+        // La tache est execute suite a l'appel du WS "rest/signalement/api/changeStatus" par un prestataire
+        long idTypeAnomalie = (long) request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_ID_TYPE_ANOMALIE );
+        int intIdTypeAnomalie = Math.toIntExact( idTypeAnomalie );
+        request.getSession( ).removeAttribute( PARAMETER_WEBSERVICE_ID_TYPE_ANOMALIE );
+        requalification.setTypeSignalement( intIdTypeAnomalie );
+
+        requalification.setIdSignalement( resourceHistory.getIdResource( ) );
+
+
+        // Secteur calculé par défaut de l'anomalie
+        Unit majorUnit = _signalementService.getMajorUnit( intIdTypeAnomalie, requalification.getLng( ), requalification.getLat( ) );
+        Sector computedSector = null;
+        if ( null != majorUnit )
+        {
+            computedSector = _sectorService.getSectorByGeomAndUnit( requalification.getLng( ), requalification.getLat( ), majorUnit.getIdUnit( ) );
+        }
+
+        if ( null != computedSector )
+        {
+            requalification.setSector( computedSector.getIdSector( ) );
+        }
+
+
+        _signalementService.saveRequalification( signalement.getId( ), signalement.getTypeSignalement( ).getId( ),
+                signalement.getAdresses( ).get( 0 ).getAdresse( ), signalement.getSecteur( ).getIdSector( ),
+                getId( ), resourceHistory.getId( ), signalement.getCommentaireAgentTerrain( ) );
+
+        if ( request.getSession( ).getAttribute(PARAMETER_WEBSERVICE_COMMENT_VALUE ) != null ) {
+            String comment = (String) request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_COMMENT_VALUE );
+            signalement.setCommentaireAgentTerrain( comment );
+        }
+
+        if ( request.getSession( ).getAttribute(PARAMETER_WEBSERVICE_EMAIL_ACTEUR) != null )
+        {
+            String emailActeur = (String) request.getSession( ).getAttribute( PARAMETER_WEBSERVICE_EMAIL_ACTEUR );
+            _signalementWorkflowService.setUserAccessCodeHistoryResource( emailActeur, resourceHistory.getId( ) );
+            request.getSession( ).removeAttribute( PARAMETER_WEBSERVICE_EMAIL_ACTEUR );
+        }
     }
 
     /**
