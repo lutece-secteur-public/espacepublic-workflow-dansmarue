@@ -33,26 +33,12 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.rejetsignalement.web;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.ObservationRejet;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.IObservationRejetService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
 import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
 import fr.paris.lutece.portal.service.message.AdminMessage;
@@ -60,6 +46,18 @@ import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * The Class RejetSignalementComponent.
@@ -113,6 +111,12 @@ public class RejetSignalementComponent extends AbstractTaskComponent
     @Named( "observationRejetService" )
     private IObservationRejetService _observationRejetService;
 
+    /** The date utils. */
+    // UTILS
+    @Inject
+    @Named( "signalement.listUtils" )
+    private IListUtils _listUtils;
+
     /**
      * Gets the display task form.
      *
@@ -151,7 +155,7 @@ public class RejetSignalementComponent extends AbstractTaskComponent
 
         // get all the type signalement
         List<ObservationRejet> types = _observationRejetService.getAllObservationRejetActif( );
-        ReferenceList listeObservation = ListUtils.toReferenceList( types, "id", "libelle", null );
+        ReferenceList listeObservation = _listUtils.toReferenceList( types, "id", "libelle", null );
         model.put( MARK_OBSERVATION_REJET_LIST, listeObservation );
         model.put( "locale", Locale.FRANCE );
 
@@ -192,25 +196,6 @@ public class RejetSignalementComponent extends AbstractTaskComponent
      */
     @Override
     public String getDisplayTaskInformation( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
     {
         return null;
     }

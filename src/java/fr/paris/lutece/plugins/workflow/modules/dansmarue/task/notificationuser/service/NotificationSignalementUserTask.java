@@ -53,15 +53,15 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.Signaleur;
 import fr.paris.lutece.plugins.dansmarue.service.IObservationRejetService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationUserValue;
+import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.IWorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementConstants;
-import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementUtil;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.mail.MailService;
@@ -169,6 +169,16 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
     private NotificationSignalementUserTaskConfigDAO _notificationSignalementUserTaskConfigDAO = SpringContextService
             .getBean( "signalement.notificationSignalementUserTaskConfigDAO" );
 
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
+
+    /** The date utils */
+    private IDateUtils _dateUtils = SpringContextService.getBean( "signalement.dateUtils" );
+
+    /** The workflow signalement utils */
+    private IWorkflowSignalementUtil _workflowSignalementUtils = SpringContextService.getBean( "signalement.workflowSignalementUtil" );
+
     private static final String MARK_ARRONDISSEMENT = "arrondissement";
 
     /**
@@ -196,7 +206,7 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
         }
 
         // get the config
-        NotificationSignalementUserTaskConfig config = _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( getId( ), SignalementUtils.getPlugin( ) );
+        NotificationSignalementUserTaskConfig config = _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( getId( ), _signalementUtils.getPlugin( ) );
 
         String messageForUser = StringUtils.EMPTY;
 
@@ -305,7 +315,7 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
         Date heureEnvoiTmstp = signalement.getHeureCreation( );
         if ( null != heureEnvoiTmstp )
         {
-            emailModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+            emailModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
         }
         else
         {
@@ -335,7 +345,7 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
             emailModel.put( MARK_ID_TYPO_LVL_1, StringUtils.EMPTY );
         }
 
-        String rejectReason = WorkflowSignalementUtil.buildValueMotifRejetForEmailNotification( request,
+        String rejectReason = _workflowSignalementUtils.buildValueMotifRejetForEmailNotification( request,
                 _observationRejetService.getAllObservationRejetActif( ) );
         if ( StringUtils.isNotBlank( rejectReason ) )
         {
@@ -353,7 +363,7 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
                 emailModel.put( MARK_RAISONS_REJET, "" );
             }
 
-        if ( signalement.getArrondissement( ) != null && signalement.getArrondissement( ).getId( ) != null )
+        if ( ( signalement.getArrondissement( ) != null ) && ( signalement.getArrondissement( ).getId( ) != null ) )
         {
             emailModel.put( MARK_ARRONDISSEMENT, signalement.getArrondissement( ).getId( ) );
         }
@@ -388,19 +398,20 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
                 if ( ( photo.getImage( ) != null ) && ( photo.getImage( ).getImage( ) != null ) )
                 {
 
-                    String [ ] mime = photo.getImage( ).getMimeType( ).split( "/" );
+                    String mime = photo.getImage( ).getMimeType( ).contains( "/" ) ? photo.getImage( ).getMimeType( ).split( "/" )[1] : photo.getImage( ).getMimeType( );
+                    String fileAttachmentMime = SignalementConstants.MIME_TYPE_START + mime;
 
                     if ( photo.getVue( ) == 1 )
                     {
 
-                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime [1], photo.getImage( ).getImage( ),
-                                photo.getImage( ).getMimeType( ) ) );
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_ENSEMBLE_PJ + mime, photo.getImage( ).getImage( ),
+                                fileAttachmentMime ) );
 
                     }
                     else
                     {
-                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime [1], photo.getImage( ).getImage( ),
-                                photo.getImage( ).getMimeType( ) ) );
+                        files.add( new FileAttachment( SignalementConstants.NOM_PHOTO_PRES_PJ + mime, photo.getImage( ).getImage( ),
+                                fileAttachmentMime ) );
                     }
                 }
             }
@@ -425,8 +436,8 @@ public class NotificationSignalementUserTask extends AbstractSignalementTask
     @Override
     public void doRemoveConfig( )
     {
-        _notificationSignalementUserTaskConfigDAO.delete( getId( ), SignalementUtils.getPlugin( ) );
-        _notificationUserValueService.removeByTask( getId( ), SignalementUtils.getPlugin( ) );
+        _notificationSignalementUserTaskConfigDAO.delete( getId( ), _signalementUtils.getPlugin( ) );
+        _notificationUserValueService.removeByTask( getId( ), _signalementUtils.getPlugin( ) );
     }
 
     /**

@@ -41,11 +41,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import fr.paris.lutece.plugins.dansmarue.service.IDepotManager;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
 import org.apache.commons.lang.StringUtils;
 
-import fr.paris.lutece.plugins.dansmarue.service.DepotManager;
+import fr.paris.lutece.plugins.dansmarue.service.impl.DepotManager;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.ServiceOption;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
@@ -75,6 +76,17 @@ public class ServiceFaitSignalementTask extends AbstractSignalementTask
     @Named( "signalementService" )
     private ISignalementService _signalementService;
 
+    /** The depot manager. */
+    @Inject
+    @Named( "depotManager" )
+    private IDepotManager _depotManager;
+
+    /** The date utils. */
+    // UTILS
+    @Inject
+    @Named( "signalement.dateUtils" )
+    private IDateUtils _dateUtils;
+
     /**
      * Process task.
      *
@@ -94,7 +106,7 @@ public class ServiceFaitSignalementTask extends AbstractSignalementTask
             int nServiceOption = Integer.parseInt( strServiceOption );
             if ( nServiceOption == ServiceOption.SIGNALE.getId( ) )
             {
-                DepotManager.doCreate( request, getIdResourceFromIdHistory( nIdResourceHistory ) );
+                _depotManager.doCreate( request, getIdResourceFromIdHistory( nIdResourceHistory ) );
             }
             else
                 if ( nServiceOption == ServiceOption.DOUBLON.getId( ) )
@@ -116,8 +128,8 @@ public class ServiceFaitSignalementTask extends AbstractSignalementTask
         else
         {
             Date dateDePassage = new Date( );
-            String strDatePassage = DateUtils.getDateFr( dateDePassage );
-            String strHourPassage = DateUtils.getHourWithSecondsFr( dateDePassage );
+            String strDatePassage = _dateUtils.getDateFr( dateDePassage );
+            String strHourPassage = _dateUtils.getHourWithSecondsFr( dateDePassage );
             _signalementService.setDateDePassage( strDatePassage, strHourPassage, (long) getIdResourceFromIdHistory( nIdResourceHistory ) );
         }
     }

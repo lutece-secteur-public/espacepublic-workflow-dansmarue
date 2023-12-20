@@ -31,48 +31,29 @@
  *
  * License 1.0
  */
-package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.reprogrammationsignalement.service;
-
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.ajoutcommentaireagentterrain;
 
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
-import fr.paris.lutece.portal.service.util.AppLogService;
-import fr.paris.lutece.portal.service.workflow.WorkflowService;
+import fr.paris.lutece.portal.service.spring.SpringContextService;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Locale;
+import java.util.Map;
 
 /**
- * ReprogrammationSignalementTask class.
+ * ResectorisationSignalementTask class.
  */
-public class ReprogrammationSignalementTask extends AbstractSignalementTask
+public class AjoutCommentaireAgentTerrainTask extends AbstractSignalementTask
 {
 
     /** The Constant TASK_TITLE. */
-    private static final String TASK_TITLE = "Intervention sur le signalement reprogrammée";
+    private static final String TASK_TITLE = "Ajout commentaire agent terrain";
+    public static final String PARAMETER_COMMENTAIRE_AGENT_TERRAIN = "commentaire_agent_terrain";
 
-    /** The signalement service. */
-    // SERVICES
-    @Inject
-    @Named( "signalementService" )
-    private ISignalementService _signalementService;
-
-    /** The signalement workflow service. */
-    @Inject
-    @Named( "signalement.workflowService" )
-    private IWorkflowService _signalementWorkflowService;
-
-    /** The signalement utils */
-    // UTILS
-    @Inject
-    @Named( "signalement.signalementUtils" )
-    private ISignalementUtils _signalementUtils;
+    private ISignalementService _signalementService = SpringContextService.getBean( "signalementService" );
 
     /**
      * Process task.
@@ -85,38 +66,20 @@ public class ReprogrammationSignalementTask extends AbstractSignalementTask
      *            the locale
      */
     @Override
+    /**
+     * {@inheritDoc}
+     */
     public void processTask( int nIdResourceHistory, HttpServletRequest request, Locale locale )
     {
-        Signalement signalementTemp = new Signalement( );
-        _signalementUtils.populate( signalementTemp, request );
+        int nIdSignalement = getIdSignalement( nIdResourceHistory );
+        Signalement signalement = _signalementService.getSignalementWithFullPhoto( nIdSignalement );
+        _signalementService.addHistoriqueCommentaireAgentTerrain( signalement, nIdResourceHistory );
 
-        Signalement signalement = _signalementService.getSignalement( signalementTemp.getId( ) );
+        String strCommentaireAgentTerrain = request.getParameter( PARAMETER_COMMENTAIRE_AGENT_TERRAIN );
 
-        // Ajout de la date
-        signalement.setDatePrevueTraitement( signalementTemp.getDatePrevueTraitement( ) );
-
-        _signalementService.update( signalement );
-
-        // set the state of the signalement with the workflow
-        WorkflowService workflowService = WorkflowService.getInstance( );
-        if ( workflowService.isAvailable( ) )
-        {
-            // récupération de l'identifiant du workflow
-            Integer workflowId = _signalementWorkflowService.getSignalementWorkflowId( );
-            if ( workflowId != null )
-            {
-                // création de l'état initial et exécution des tâches automatiques
-                workflowService.getState( signalement.getId( ).intValue( ), Signalement.WORKFLOW_RESOURCE_TYPE, workflowId, null );
-                workflowService.executeActionAutomatic( signalement.getId( ).intValue( ), Signalement.WORKFLOW_RESOURCE_TYPE, workflowId, null );
-            }
-            else
-            {
-                AppLogService.error( "Signalement : No workflow selected" );
-            }
-        }
-        else
-        {
-            AppLogService.error( "Signalement : Workflow not available" );
+        if( StringUtils.isNotEmpty( strCommentaireAgentTerrain )) {
+            signalement.setCommentaireAgentTerrain( strCommentaireAgentTerrain );
+            _signalementService.update( signalement );
         }
     }
 
@@ -145,5 +108,4 @@ public class ReprogrammationSignalementTask extends AbstractSignalementTask
     {
         return null;
     }
-
 }

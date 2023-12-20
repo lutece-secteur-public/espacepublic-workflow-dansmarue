@@ -33,22 +33,11 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.web;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.service.IWorkflowService;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.business.WebServiceSignalementTaskConfigDTO;
@@ -71,6 +60,16 @@ import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * WebServiceComponent.
@@ -158,7 +157,7 @@ public class WebServiceComponent extends AbstractTaskComponent
 
     /** The unit service. */
     @Inject
-    @Named( IUnitService.BEAN_UNIT_SERVICE )
+    @Named( UnitService.BEAN_UNIT_SERVICE )
     private IUnitService _unitService;
 
     /** The signalement workflow service. */
@@ -180,6 +179,17 @@ public class WebServiceComponent extends AbstractTaskComponent
     @Inject
     @Named( "workflow.stateService" )
     private IStateService _stateService;
+
+    /** The signalement utils */
+    // UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
+    /** The date utils. */
+    @Inject
+    @Named( "signalement.listUtils" )
+    private IListUtils _listUtils;
 
     /**
      * Gets the display task form.
@@ -239,7 +249,7 @@ public class WebServiceComponent extends AbstractTaskComponent
         StateFilter filter = new StateFilter( );
         filter.setIdWorkflow( _signalementWorkflowService.getSignalementWorkflowId( ) );
 
-        ReferenceList listeUnits = ListUtils.toReferenceList( _unitService.getAllUnits( false ), "idUnit", "label", "" );
+        ReferenceList listeUnits = _listUtils.toReferenceList( _unitService.getAllUnits( false ), "idUnit", "label", "" );
         model.put( MARK_LISTE_UNITS, listeUnits );
 
         List<State> stateList = _stateService.getListStateByFilter( filter );
@@ -285,26 +295,6 @@ public class WebServiceComponent extends AbstractTaskComponent
 
         return template.getHtml( );
     }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
     /**
      * Do validate task.
      *
@@ -468,14 +458,14 @@ public class WebServiceComponent extends AbstractTaskComponent
             config.setIdTask( task.getId( ) );
 
             // Ajoute la conf' sur les états de sortie en BDD si rien a été configuré pour cette tâche
-            if ( _configDAO.findByPrimaryKey( task.getId( ), SignalementUtils.getPlugin( ) ) == null )
+            if ( _configDAO.findByPrimaryKey( task.getId( ), _signalementUtils.getPlugin( ) ) == null )
             {
-                _configDAO.insert( config, SignalementUtils.getPlugin( ) );
+                _configDAO.insert( config, _signalementUtils.getPlugin( ) );
             }
             else
             // Si une précédente conf' était déjà en BDD, une mise à jour est effectuée avec les nouveaux états de sortie
             {
-                _configDAO.update( config, SignalementUtils.getPlugin( ) );
+                _configDAO.update( config, _signalementUtils.getPlugin( ) );
             }
             return null;
         }

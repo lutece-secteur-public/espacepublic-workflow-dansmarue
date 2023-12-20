@@ -131,15 +131,6 @@
 
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.webservice.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.commons.exceptions.BusinessException;
@@ -148,8 +139,10 @@ import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementWebService;
 import fr.paris.lutece.plugins.dansmarue.service.SignalementPlugin;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.impl.SignalementUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
+import fr.paris.lutece.plugins.unittree.modules.dansmarue.service.unit.IUnitSiraService;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
@@ -165,6 +158,13 @@ import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * WebServiceSignalementTask class.
@@ -233,6 +233,7 @@ public class WebServiceSignalementTask extends AbstractSignalementTask
     /** The unit service. */
     private IUnitService _unitService = SpringContextService.getBean( "unittree.unitService" );
 
+    private IUnitSiraService _unitSiraService = SpringContextService.getBean( "unittree-dansmarue.unitSiraService" );
     // DAO
 
     /** The config DAO. */
@@ -247,6 +248,10 @@ public class WebServiceSignalementTask extends AbstractSignalementTask
 
     /** The state service. */
     private IStateService _stateService = SpringContextService.getBean( "workflow.stateService" );
+
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
 
     /** The Constant JSON_TAG_ANSWER. */
     // Constant
@@ -413,7 +418,7 @@ public class WebServiceSignalementTask extends AbstractSignalementTask
 
                             nNewState = wsconfig.getStateWithWSFailure( );
 
-                            if ( bean.getAdresses( ).isEmpty( ) || !SignalementUtils.isValidAddress( bean.getAdresses( ).get( 0 ).getAdresse( ) ) )
+                            if ( bean.getAdresses( ).isEmpty( ) || !_signalementUtils.isValidAddress( bean.getAdresses( ).get( 0 ).getAdresse( ) ) )
                             {
 
                                 webservicevalue.setValue( I18nService.getLocalizedString( MESSAGE_WEBSERVICE_FAILURE_WRONG_ADDRESS, Locale.FRENCH ) );
@@ -578,7 +583,7 @@ public class WebServiceSignalementTask extends AbstractSignalementTask
     {
 
         boolean isDirectionDEVE = false;
-        List<Unit> listUnitsSector = _unitService.findBySectorId( signalement.getSecteur( ).getIdSector( ) );
+        List<Unit> listUnitsSector = _unitSiraService.findBySectorId( signalement.getSecteur( ).getIdSector( ) );
         for ( Unit unit : listUnitsSector )
         {
             if ( ( unit.getIdParent( ) == 0 ) && ( unit.getIdUnit( ) == Integer.parseInt( SignalementConstants.UNIT_DEVE ) ) )
@@ -661,9 +666,9 @@ public class WebServiceSignalementTask extends AbstractSignalementTask
 
     {
 
-        _configDAO.delete( getId( ), SignalementUtils.getPlugin( ) );
+        _configDAO.delete( getId( ), _signalementUtils.getPlugin( ) );
 
-        _configunitDAO.deleteAll( getId( ), SignalementUtils.getPlugin( ) );
+        _configunitDAO.deleteAll( getId( ), _signalementUtils.getPlugin( ) );
 
     }
 

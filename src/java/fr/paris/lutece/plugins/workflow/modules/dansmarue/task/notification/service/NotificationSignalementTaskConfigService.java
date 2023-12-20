@@ -42,7 +42,7 @@ import javax.inject.Named;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfig;
@@ -79,6 +79,11 @@ public class NotificationSignalementTaskConfigService
     @Named( "typeSignalementService" )
     private ITypeSignalementService _typeSignalementService;
 
+    /** The signalement utils */
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
     /**
      * Add a new NotificationSignalementTask configuration.
      *
@@ -87,7 +92,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void insert( NotificationSignalementTaskConfigDTO configDTO )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
 
         NotificationSignalementTaskConfig config = new NotificationSignalementTaskConfig( );
         config.setIdTask( configDTO.getIdTask( ) );
@@ -105,7 +110,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void insertUnit( NotificationSignalementTaskConfigUnit configUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.insert( configUnit, plugin );
     }
 
@@ -117,7 +122,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void insertWithTypeSignalement( NotificationSignalementTaskConfigUnit configTypeSignalement )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.insertWithTypeSignalement( configTypeSignalement, plugin );
     }
 
@@ -129,7 +134,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void update( NotificationSignalementTaskConfigDTO configDTO )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
 
         NotificationSignalementTaskConfig config = new NotificationSignalementTaskConfig( );
         config.setIdTask( configDTO.getIdTask( ) );
@@ -147,7 +152,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void updateUnit( NotificationSignalementTaskConfigUnit configUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.update( configUnit, plugin );
     }
 
@@ -159,7 +164,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void updateWithTypeSignalement( NotificationSignalementTaskConfigUnit configTypeSignalement )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.update( configTypeSignalement, plugin );
     }
 
@@ -172,7 +177,7 @@ public class NotificationSignalementTaskConfigService
      */
     public NotificationSignalementTaskConfigDTO findByPrimaryKey( int nIdTask )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         NotificationSignalementTaskConfigDTO configDTO = new NotificationSignalementTaskConfigDTO( );
 
         NotificationSignalementTaskConfig config = _notificationSignalementTaskConfigDAO.findByPrimaryKey( nIdTask, plugin );
@@ -209,7 +214,7 @@ public class NotificationSignalementTaskConfigService
      */
     public NotificationSignalementTaskConfigDTO findByPrimaryKeyWithTypeSignalement( int nIdTask )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         NotificationSignalementTaskConfigDTO configDTO = new NotificationSignalementTaskConfigDTO( );
 
         NotificationSignalementTaskConfig config = _notificationSignalementTaskConfigDAO.findByPrimaryKey( nIdTask, plugin );
@@ -248,7 +253,7 @@ public class NotificationSignalementTaskConfigService
      */
     public NotificationSignalementTaskConfigUnit findUnitByPrimaryKey( int nIdTask, int nIdUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         return _notificationSignalementTaskConfigUnitDAO.findByPrimaryKey( nIdTask, nIdUnit, plugin );
     }
 
@@ -263,7 +268,7 @@ public class NotificationSignalementTaskConfigService
      */
     public NotificationSignalementTaskConfigUnit findByIdTypeSignalement( int nIdTask, int nIdTypeSignalement )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         return _notificationSignalementTaskConfigUnitDAO.findByPrimaryKeyTypeSignalement( nIdTask, nIdTypeSignalement, plugin );
     }
 
@@ -275,7 +280,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void delete( int nIdTask )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.deleteAll( nIdTask, plugin );
         _notificationSignalementTaskConfigDAO.delete( nIdTask, plugin );
     }
@@ -290,7 +295,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void deleteUnit( int nIdTask, int nIdUnit )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.delete( nIdTask, nIdUnit, plugin );
     }
 
@@ -304,7 +309,7 @@ public class NotificationSignalementTaskConfigService
      */
     public void deleteWithTypeSignalement( int nIdTask, int nIdTypeSignalement )
     {
-        Plugin plugin = SignalementUtils.getPlugin( );
+        Plugin plugin = _signalementUtils.getPlugin( );
         _notificationSignalementTaskConfigUnitDAO.deleteByTypeSignalement( nIdTask, nIdTypeSignalement, plugin );
     }
 
@@ -343,6 +348,36 @@ public class NotificationSignalementTaskConfigService
         TypeSignalement typeLvl2 = new TypeSignalement( );
         TypeSignalement typeLvl3 = _typeSignalementService.getTypeSignalementByIdWithParents( signalement.getTypeSignalement( ).getId( ) );
 
+        List<Integer> listIdTypeSignalement = fillListIdTypeSignalement( typeLvl1, typeLvl2, typeLvl3 );
+
+        for ( NotificationSignalementTaskConfigUnit configType : configDTO.getListConfigUnit( ) )
+        {
+            if ( listIdTypeSignalement.contains( configType.getTypeSignalement( ).getId( ) ) )
+            {
+                if ( typeLvl1.getId( ) != null )
+                {
+                    listTypes.add( typeLvl1 );
+                }
+                if ( ( typeLvl2.getId( ) != null ) )
+                {
+                    listTypes.add( typeLvl2 );
+                }
+                listTypes.add( typeLvl3 );
+            }
+        }
+
+        return listTypes;
+    }
+
+    /**
+     * fill ListIdTypeSignalement.
+     *
+     * @param idTypeSignalement
+     * @return
+     */
+    private List<Integer> fillListIdTypeSignalement( TypeSignalement typeLvl1, TypeSignalement typeLvl2, TypeSignalement typeLvl3 )
+    {
+
         List<Integer> listIdTypeSignalement = new ArrayList<>( );
         if ( typeLvl3.getTypeSignalementParent( ) != null )
         {
@@ -361,23 +396,7 @@ public class NotificationSignalementTaskConfigService
         }
         listIdTypeSignalement.add( typeLvl3.getId( ) );
 
-        for ( NotificationSignalementTaskConfigUnit configType : configDTO.getListConfigUnit( ) )
-        {
-            if ( listIdTypeSignalement.contains( configType.getTypeSignalement( ).getId( ) ) )
-            {
-                if ( typeLvl1.getId( ) != null )
-                {
-                    listTypes.add( typeLvl1 );
-                }
-                if ( ( typeLvl2 != null ) && ( typeLvl2.getId( ) != null ) )
-                {
-                    listTypes.add( typeLvl2 );
-                }
-                listTypes.add( typeLvl3 );
-            }
-        }
-
-        return listTypes;
+        return listIdTypeSignalement;
     }
 
 }

@@ -33,33 +33,17 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.web;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.service.FileMessageCreationService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IDateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.dto.BaliseFreemarkerDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationSignalementUserTaskConfigDAO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.business.NotificationUserValue;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationuser.service.NotificationUserValueService;
-import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.WorkflowSignalementConstants;
 import fr.paris.lutece.plugins.workflow.utils.WorkflowUtils;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
 import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
@@ -73,6 +57,19 @@ import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * The notification user component.
@@ -218,6 +215,17 @@ public class NotificationUserComponent extends AbstractTaskComponent
     @Named( "signalement.notificationSignalementUserTaskConfigDAO" )
     private NotificationSignalementUserTaskConfigDAO _notificationSignalementUserTaskConfigDAO;
 
+    /** The signalement utils */
+    // UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
+    /** The date utils. */
+    @Inject
+    @Named( "signalement.dateUtils" )
+    private IDateUtils _dateUtils;
+
     /**
      * Gets the display task form.
      *
@@ -238,7 +246,7 @@ public class NotificationUserComponent extends AbstractTaskComponent
     {
         Map<String, Object> model = new HashMap<>( );
         NotificationSignalementUserTaskConfig config = _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( task.getId( ),
-                SignalementUtils.getPlugin( ) );
+                _signalementUtils.getPlugin( ) );
 
         Signalement signalement = _signalementService.getSignalement( nIdResource );
         // Récupération du message
@@ -318,7 +326,7 @@ public class NotificationUserComponent extends AbstractTaskComponent
             Date heureEnvoiTmstp = signalement.getHeureCreation( );
             if ( null != heureEnvoiTmstp )
             {
-                emailModel.put( MARK_HEURE_ENVOI, DateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
+                emailModel.put( MARK_HEURE_ENVOI, _dateUtils.getHourWithSecondsFr( heureEnvoiTmstp ) );
             }
             else
             {
@@ -386,7 +394,7 @@ public class NotificationUserComponent extends AbstractTaskComponent
     public String getDisplayConfigForm( HttpServletRequest request, Locale locale, ITask task )
     {
         NotificationSignalementUserTaskConfig config = _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( task.getId( ),
-                SignalementUtils.getPlugin( ) );
+                _signalementUtils.getPlugin( ) );
 
         String strMessage = _signalementService.loadMessageCreationSignalement( );
         if ( ( ( config != null ) && ( config.getMessage( ) == null ) ) && !strMessage.equals( StringUtils.EMPTY ) )
@@ -537,13 +545,13 @@ public class NotificationUserComponent extends AbstractTaskComponent
             return AdminMessageService.getMessageUrl( request, MESSAGE_MANDATORY_FIELD, tabRequiredFields, AdminMessage.TYPE_STOP );
         }
 
-        if ( _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( task.getId( ), SignalementUtils.getPlugin( ) ).getIdTask( ) == 0 )
+        if ( _notificationSignalementUserTaskConfigDAO.findByPrimaryKey( task.getId( ), _signalementUtils.getPlugin( ) ).getIdTask( ) == 0 )
         {
-            _notificationSignalementUserTaskConfigDAO.insert( config, SignalementUtils.getPlugin( ) );
+            _notificationSignalementUserTaskConfigDAO.insert( config, _signalementUtils.getPlugin( ) );
         }
         else
         {
-            _notificationSignalementUserTaskConfigDAO.update( config, SignalementUtils.getPlugin( ) );
+            _notificationSignalementUserTaskConfigDAO.update( config, _signalementUtils.getPlugin( ) );
         }
 
         return null;
@@ -575,25 +583,6 @@ public class NotificationUserComponent extends AbstractTaskComponent
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_NOTIFICATION_USER_INFORMATION, locale, model );
 
         return template.getHtml( );
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
     }
 
     /**

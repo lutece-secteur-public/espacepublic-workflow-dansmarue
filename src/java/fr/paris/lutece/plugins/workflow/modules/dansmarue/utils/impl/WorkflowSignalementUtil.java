@@ -31,7 +31,7 @@
  *
  * License 1.0
  */
-package fr.paris.lutece.plugins.workflow.modules.dansmarue.utils;
+package fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +39,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.IWorkflowSignalementUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -48,23 +49,23 @@ import fr.paris.lutece.plugins.dansmarue.business.entities.ObservationRejet;
 /**
  * The Class WorkflowSignalementUtil.
  */
-public class WorkflowSignalementUtil
+public class WorkflowSignalementUtil implements IWorkflowSignalementUtil
 {
 
     /** The Constant PARAMETER_MOTIF_REJET. */
-    private static final String PARAMETER_MOTIF_REJET = "motif_rejet";
+    private final String PARAMETER_MOTIF_REJET = "motif_rejet";
 
     /** The Constant PARAMETER_MOTIF_AUTRE_CHECKBOX. */
-    private static final String PARAMETER_MOTIF_AUTRE_CHECKBOX = "motif_autre_checkbox";
+    private final String PARAMETER_MOTIF_AUTRE_CHECKBOX = "motif_autre_checkbox";
 
     /** The Constant PARAMETER_MOTIF_AUTRE. */
-    private static final String PARAMETER_MOTIF_AUTRE = "motif_autre";
+    private final String PARAMETER_MOTIF_AUTRE = "motif_autre";
 
     /** The Constant MOTIF_REJET_PREPEND. */
-    private static final String MOTIF_REJET_PREPEND = "- ";
+    private final String MOTIF_REJET_PREPEND = "- ";
 
     /** The Constant MOTIF_REJET_SEPARATOR. */
-    private static final String MOTIF_REJET_SEPARATOR = "<br/>";
+    private final String MOTIF_REJET_SEPARATOR = "<br/>";
 
     /**
      * Instantiates a new workflow signalement util.
@@ -75,16 +76,10 @@ public class WorkflowSignalementUtil
     }
 
     /**
-     * Get reject reason.
-     *
-     * @param request
-     *            the http reuest
-     * @param observationList
-     *            list observation rejet
-     *
-     * @return list of reject reason
+     * {@inheritDoc}
      */
-    public static List<String> getMotifsRejet( HttpServletRequest request, List<ObservationRejet> observationList )
+    @Override
+    public List<String> getMotifsRejet( HttpServletRequest request, List<ObservationRejet> observationList )
     {
 
         if ( null == request )
@@ -111,16 +106,10 @@ public class WorkflowSignalementUtil
     }
 
     /**
-     * Construct reject reason string for email notification.
-     *
-     * @param request
-     *            the http reuest
-     * @param observationList
-     *            list observation rejet
-     *
-     * @return string reject reason
+     * {@inheritDoc}
      */
-    public static String buildValueMotifRejetForEmailNotification( HttpServletRequest request, List<ObservationRejet> observationList )
+    @Override
+    public String buildValueMotifRejetForEmailNotification( HttpServletRequest request, List<ObservationRejet> observationList )
     {
 
         if ( request == null )
@@ -138,11 +127,12 @@ public class WorkflowSignalementUtil
 
             if ( CollectionUtils.isNotEmpty( motifsRejet ) )
             {
-                for ( int i = 0; i < motifsRejet.size( ); i++ )
+                int motifsRejetSize = motifsRejet.size( );
+                for ( int i = 0; i < motifsRejetSize; i++ )
                 {
                     String motifRejet = motifsRejet.get( i );
                     motifsRejetStr.append( MOTIF_REJET_PREPEND ).append( motifRejet );
-                    if ( ( i < ( motifsRejet.size( ) - 1 ) ) || motifAutreCheckBox )
+                    if ( ( i < ( motifsRejetSize - 1 ) ) || motifAutreCheckBox )
                     {
                         motifsRejetStr.append( MOTIF_REJET_SEPARATOR );
                     }

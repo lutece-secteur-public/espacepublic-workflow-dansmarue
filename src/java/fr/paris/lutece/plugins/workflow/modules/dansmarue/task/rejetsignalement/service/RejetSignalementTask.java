@@ -40,6 +40,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import fr.paris.lutece.plugins.dansmarue.util.constants.DateConstants;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -47,7 +48,7 @@ import fr.paris.lutece.plugins.dansmarue.commons.exceptions.BusinessException;
 import fr.paris.lutece.plugins.dansmarue.service.IObservationRejetSignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.impl.DateUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.AbstractSignalementTask;
 import fr.paris.lutece.plugins.workflowcore.business.resource.ResourceHistory;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
@@ -96,7 +97,7 @@ public class RejetSignalementTask extends AbstractSignalementTask
         ResourceHistory resourceHistory = _resourceHistoryService.findByPrimaryKey( nIdResourceHistory );
         Integer idRessource = resourceHistory.getIdResource( );
         String [ ] motifsRejetIds = request.getParameterValues( PARAMETER_MOTIF_REJET );
-        SimpleDateFormat sdfDate = new SimpleDateFormat( DateUtils.DATE_FR );
+        SimpleDateFormat sdfDate = new SimpleDateFormat( DateConstants.DATE_FR );
         String date = sdfDate.format( Calendar.getInstance( ).getTime( ) );
 
         boolean motifAutreCheckBox = StringUtils.isNotBlank( request.getParameter( PARAMETER_MOTIF_AUTRE_CHECKBOX ) );

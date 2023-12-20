@@ -33,23 +33,10 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.reprogrammationsignalement.web;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.commons.exceptions.BusinessException;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.TaskUtils;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
 import fr.paris.lutece.plugins.workflowcore.service.task.ITask;
@@ -59,6 +46,18 @@ import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.util.beanvalidation.BeanValidationUtil;
 import fr.paris.lutece.util.html.HtmlTemplate;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * ReprogrammationComponent.
@@ -92,6 +91,11 @@ public class ReprogrammationComponent extends AbstractTaskComponent
     @Inject
     @Named( "signalementService" )
     private ISignalementService _signalementService;
+
+    /** The signalement utils */
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
 
     /**
      * Gets the display task form.
@@ -161,25 +165,6 @@ public class ReprogrammationComponent extends AbstractTaskComponent
     }
 
     /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
      * Do validate task.
      *
      * @param nIdResource
@@ -198,7 +183,7 @@ public class ReprogrammationComponent extends AbstractTaskComponent
     public String doValidateTask( int nIdResource, String strResourceType, HttpServletRequest request, Locale locale, ITask task )
     {
         Signalement signalementTemp = new Signalement( );
-        SignalementUtils.populate( signalementTemp, request );
+        _signalementUtils.populate( signalementTemp, request );
 
         Set<ConstraintViolation<Signalement>> errors = BeanValidationUtil.validate( signalementTemp );
         if ( !errors.isEmpty( ) )

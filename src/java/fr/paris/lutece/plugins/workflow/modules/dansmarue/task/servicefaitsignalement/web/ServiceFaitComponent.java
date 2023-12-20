@@ -33,31 +33,14 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.servicefaitsignalement.web;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.Adresse;
 import fr.paris.lutece.plugins.dansmarue.business.entities.Signalement;
 import fr.paris.lutece.plugins.dansmarue.commons.exceptions.FunctionnalException;
-import fr.paris.lutece.plugins.dansmarue.service.DepotManager;
+import fr.paris.lutece.plugins.dansmarue.service.IDepotManager;
 import fr.paris.lutece.plugins.dansmarue.service.IAdresseService;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
+import fr.paris.lutece.plugins.dansmarue.util.constants.DateConstants;
 import fr.paris.lutece.plugins.dansmarue.util.constants.SignalementConstants;
-import fr.paris.lutece.plugins.dansmarue.utils.DateUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.servicefaitsignalement.service.ServiceFaitSignalementTask;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.utils.ServiceOption;
 import fr.paris.lutece.plugins.workflow.web.task.AbstractTaskComponent;
@@ -68,6 +51,21 @@ import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.web.constants.Messages;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ServiceFaitComponent.
@@ -122,6 +120,11 @@ public class ServiceFaitComponent extends AbstractTaskComponent
     @Named( "adresseSignalementService" )
     private IAdresseService _adresseService;
 
+    /** The depot manager. */
+    @Inject
+    @Named( "depotManager" )
+    private IDepotManager _depotManager;
+
     /**
      * Gets the display task form.
      *
@@ -158,7 +161,7 @@ public class ServiceFaitComponent extends AbstractTaskComponent
 
         model.put( SignalementConstants.MARK_LOCALE, locale );
 
-        DepotManager.fillModel( request, signalement, model, MARK_LIST_DEPOTS );
+        _depotManager.fillModel( request, signalement, model, MARK_LIST_DEPOTS );
 
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_FORM, locale, model );
 
@@ -202,25 +205,6 @@ public class ServiceFaitComponent extends AbstractTaskComponent
     }
 
     /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
      * Do validate task.
      *
      * @param nIdResource
@@ -251,7 +235,7 @@ public class ServiceFaitComponent extends AbstractTaskComponent
             {
                 try
                 {
-                    DepotManager.doValidate( request );
+                    _depotManager.doValidate( request );
                 }
                 catch( FunctionnalException fe )
                 {
@@ -275,13 +259,13 @@ public class ServiceFaitComponent extends AbstractTaskComponent
                 else
                 {
 
-                    if ( !isValidFormat( DateUtils.DATE_FR, dateDePassage ) )
+                    if ( !isValidFormat( DateConstants.DATE_FR, dateDePassage ) )
                     {
 
                         return AdminMessageService.getMessageUrl( request, KEY_DATE_DE_PASSAGE_MAUVAIS_FORMAT, AdminMessage.TYPE_STOP );
                     }
                     else
-                        if ( !isValidFormat( DateUtils.HOUR_FR, heureDePassage ) )
+                        if ( !isValidFormat( DateConstants.HOUR_FR, heureDePassage ) )
                         {
                             return AdminMessageService.getMessageUrl( request, KEY_HEURE_DE_PASSAGE_MAUVAIS_FORMAT, AdminMessage.TYPE_STOP );
                         }

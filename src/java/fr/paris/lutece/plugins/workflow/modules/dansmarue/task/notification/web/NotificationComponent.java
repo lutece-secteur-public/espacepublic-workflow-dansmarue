@@ -33,27 +33,13 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.web;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.ListUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.IListUtils;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.dto.BaliseFreemarkerDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigUnit;
@@ -72,6 +58,19 @@ import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * The notification component.
@@ -212,7 +211,7 @@ public class NotificationComponent extends AbstractTaskComponent
     /** The unit service. */
     // SERVICES
     @Inject
-    @Named( IUnitService.BEAN_UNIT_SERVICE )
+    @Named( UnitService.BEAN_UNIT_SERVICE )
     private IUnitService _unitService;
 
     /** The notification signalement task config service. */
@@ -239,6 +238,12 @@ public class NotificationComponent extends AbstractTaskComponent
     @Inject
     @Named( "signalement.notificationSignalementTaskConfigUnitService" )
     private NotificationSignalementTaskConfigUnitService _notificationSignalementTaskConfigUnitService;
+
+    /** The date utils. */
+    // UTILS
+    @Inject
+    @Named( "signalement.listUtils" )
+    private IListUtils _listUtils;
 
     /**
      * Gets the display task form.
@@ -286,11 +291,11 @@ public class NotificationComponent extends AbstractTaskComponent
         model.put( MARK_WEBAPP_URL, AppPathService.getBaseUrl( request ) );
         model.put( MARK_LOCALE, request.getLocale( ) );
 
-        ReferenceList listeUnits = ListUtils.toReferenceList( _unitService.getAllUnits( false ), "idUnit", "label", "" );
+        ReferenceList listeUnits = _listUtils.toReferenceList( _unitService.getAllUnits( false ), "idUnit", "label", "" );
         model.put( MARK_LISTE_UNITS, listeUnits );
 
         List<TypeSignalement> types = _typeSignalementService.getAllTypeSignalementActif( );
-        ReferenceList listeTypes = ListUtils.toReferenceList( types, "id", "formatTypeSignalement", "", false );
+        ReferenceList listeTypes = _listUtils.toReferenceList( types, "id", "formatTypeSignalement", "", false );
         model.put( MARK_TYPE_LIST, listeTypes );
 
         // Liste des balises freemaker pouvant être utilisées (à ajouter dans emailModel dans processAction))
@@ -633,25 +638,6 @@ public class NotificationComponent extends AbstractTaskComponent
      */
     @Override
     public String getDisplayTaskInformation( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
     {
         return null;
     }

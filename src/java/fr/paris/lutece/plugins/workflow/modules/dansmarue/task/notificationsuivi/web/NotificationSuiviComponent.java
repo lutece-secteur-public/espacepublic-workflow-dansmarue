@@ -33,21 +33,8 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.web;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.service.ISignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.service.dto.BaliseFreemarkerDTO;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfig;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationsuivi.business.NotificationSuiviTaskConfigDAO;
@@ -63,6 +50,17 @@ import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.html.HtmlTemplate;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * NotificationSuiviComponent.
@@ -199,6 +197,12 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
     @Named( "signalement.notificationSignalementSuiviTaskConfigDAO" )
     private NotificationSuiviTaskConfigDAO _notificationSuiviTaskConfigDAO;
 
+    /** The signalement utils */
+    // UTILS
+    @Inject
+    @Named( "signalement.signalementUtils" )
+    private ISignalementUtils _signalementUtils;
+
     /**
      * Gets the display task form.
      *
@@ -234,7 +238,7 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
     @Override
     public String getDisplayConfigForm( HttpServletRequest request, Locale locale, ITask task )
     {
-        NotificationSuiviTaskConfig config = _notificationSuiviTaskConfigDAO.load( task.getId( ), SignalementUtils.getPlugin( ) );
+        NotificationSuiviTaskConfig config = _notificationSuiviTaskConfigDAO.load( task.getId( ), _signalementUtils.getPlugin( ) );
 
         Map<String, Object> model = new HashMap<>( );
 
@@ -382,13 +386,13 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
             return AdminMessageService.getMessageUrl( request, MESSAGE_MANDATORY_FIELD, tabRequiredFields, AdminMessage.TYPE_STOP );
         }
 
-        if ( _notificationSuiviTaskConfigDAO.load( task.getId( ), SignalementUtils.getPlugin( ) ).getIdTask( ) == 0 )
+        if ( _notificationSuiviTaskConfigDAO.load( task.getId( ), _signalementUtils.getPlugin( ) ).getIdTask( ) == 0 )
         {
-            _notificationSuiviTaskConfigDAO.insert( config, SignalementUtils.getPlugin( ) );
+            _notificationSuiviTaskConfigDAO.insert( config, _signalementUtils.getPlugin( ) );
         }
         else
         {
-            _notificationSuiviTaskConfigDAO.store( config, SignalementUtils.getPlugin( ) );
+            _notificationSuiviTaskConfigDAO.store( config, _signalementUtils.getPlugin( ) );
         }
 
         return null;
@@ -418,25 +422,6 @@ public class NotificationSuiviComponent extends AbstractTaskComponent
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_TASK_NOTIFICATION_SUIVI_INFORMATION, locale, model );
 
         return template.getHtml( );
-    }
-
-    /**
-     * Gets the task information xml.
-     *
-     * @param nIdHistory
-     *            the n id history
-     * @param request
-     *            the request
-     * @param locale
-     *            the locale
-     * @param task
-     *            the task
-     * @return the task information xml
-     */
-    @Override
-    public String getTaskInformationXml( int nIdHistory, HttpServletRequest request, Locale locale, ITask task )
-    {
-        return null;
     }
 
     /**

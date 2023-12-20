@@ -33,21 +33,14 @@
  */
 package fr.paris.lutece.plugins.workflow.modules.dansmarue.web;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.paris.lutece.plugins.dansmarue.business.entities.TypeSignalement;
 import fr.paris.lutece.plugins.dansmarue.commons.exceptions.FunctionnalException;
 import fr.paris.lutece.plugins.dansmarue.service.ITypeSignalementService;
-import fr.paris.lutece.plugins.dansmarue.utils.SignalementUtils;
+import fr.paris.lutece.plugins.dansmarue.utils.ISignalementUtils;
 import fr.paris.lutece.plugins.dansmarue.web.AbstractJspBean;
 import fr.paris.lutece.plugins.unittree.business.unit.Unit;
 import fr.paris.lutece.plugins.unittree.service.unit.IUnitService;
+import fr.paris.lutece.plugins.unittree.service.unit.UnitService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.business.NotificationSignalementTaskConfigUnit;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notification.service.NotificationSignalementTaskConfigService;
 import fr.paris.lutece.plugins.workflow.modules.dansmarue.task.notificationusermulticontents.business.NotificationSignalementUserMultiContentsTaskConfig;
@@ -63,6 +56,12 @@ import fr.paris.lutece.portal.web.constants.Messages;
 import fr.paris.lutece.util.beanvalidation.ValidationError;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.url.UrlItem;
+import org.apache.commons.lang.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The class NotificationSignalementTaskConfigJspBean.
@@ -135,7 +134,7 @@ public class NotificationSignalementTaskConfigJspBean extends AbstractJspBean
             .getBean( "signalement.notificationSignalementTaskConfigService" );
 
     /** The unit service. */
-    private transient IUnitService _unitService = SpringContextService.getBean( IUnitService.BEAN_UNIT_SERVICE );
+    private transient IUnitService _unitService = SpringContextService.getBean( UnitService.BEAN_UNIT_SERVICE );
 
     /** The notification signalement user multi contents task config DAO. */
     private transient NotificationSignalementUserMultiContentsTaskConfigDAO _notificationSignalementUserMultiContentsTaskConfigDAO = SpringContextService
@@ -143,6 +142,10 @@ public class NotificationSignalementTaskConfigJspBean extends AbstractJspBean
 
     /** The type signalement service. */
     private transient ITypeSignalementService _typeSignalementService = SpringContextService.getBean( "typeSignalementService" );
+
+    /** The signalement utils */
+    // UTILS
+    private ISignalementUtils _signalementUtils = SpringContextService.getBean( "signalement.signalementUtils" );
 
     /**
      * Return AdminMessage page content to confirm the notificationSignalementTaskUnit delete.
@@ -352,7 +355,7 @@ public class NotificationSignalementTaskConfigJspBean extends AbstractJspBean
         String strIdMessage = request.getParameter( "idMessageDelete" );
 
         _notificationSignalementUserMultiContentsTaskConfigDAO.deleteMessage( Long.parseLong( strIdMessage ), Integer.parseInt( strIdTask ),
-                SignalementUtils.getPlugin( ) );
+                _signalementUtils.getPlugin( ) );
 
         UrlItem url = new UrlItem( AppPathService.getBaseUrl( request ) + JSP_MODIFY_TASK );
         url.addParameter( PARAMETER_ID_TASK, strIdTask );
@@ -401,7 +404,7 @@ public class NotificationSignalementTaskConfigJspBean extends AbstractJspBean
             return AdminMessageService.getMessageUrl( request, MESSAGE_MANDATORY_FIELD, tabRequiredFields, AdminMessage.TYPE_STOP );
         }
 
-        _notificationSignalementUserMultiContentsTaskConfigDAO.insert( config, Integer.parseInt( strIdTask ), SignalementUtils.getPlugin( ) );
+        _notificationSignalementUserMultiContentsTaskConfigDAO.insert( config, Integer.parseInt( strIdTask ), _signalementUtils.getPlugin( ) );
 
         UrlItem url = new UrlItem( AppPathService.getBaseUrl( request ) + JSP_MODIFY_TASK );
         url.addParameter( PARAMETER_ID_TASK, strIdTask );

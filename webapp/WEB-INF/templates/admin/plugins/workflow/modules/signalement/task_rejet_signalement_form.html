@@ -6,7 +6,7 @@
 			<div class="form-group">
 				<div class="<@checkboxStyle />" >
 					<#if observation_list?has_content && observation_list?size gt 0 > 
-							<@checkboxList name="motif_rejet" default_values=0 items=observation_list inline=0/>
+							<@checkboxList name="motif_rejet" default_values=0 items=observation_list inline=true/>
 					</#if>
 					<div class="checkbox">
 						<label for="motif_autre_checkbox"><input id="motif_autre_checkbox" class="checkbox" type="checkbox" name="motif_autre_checkbox" value="autre"/>&nbsp;#i18n{module.workflow.dansmarue.rejet.autre}</label>
